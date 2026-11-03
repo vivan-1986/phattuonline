@@ -39,9 +39,9 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.7);
         }
         .buddha-img {
-            width: 200px;
+            width: 220px;
             height: auto;
-            filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.6));
+            filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.7));
             transition: transform 0.1s;
             z-index: 2;
         }
@@ -171,8 +171,8 @@
     <div class="subtitle">Bật nhạc Thiền, gõ mõ tích đức, xin 72 quẻ linh ứng & xem lịch xuất hành</div>
 
     <div class="altar" id="altar-zone">
-        <!-- ĐÃ SỬA: Đường dẫn ảnh Phật Thích Ca vàng chất lượng, chuẩn hiển thị SVG không bao giờ lỗi -->
-        <img class="buddha-img" id="buddha" src="https://wikimedia.org" alt="Tượng Phật">
+        <!-- Đường dẫn ảnh tượng Phật Thích Ca Mâu Ni mạ vàng chuẩn sắc nét không lỗi -->
+        <img class="buddha-img" id="buddha" src="https://postimg.cc" alt="Tượng Phật">
         
         <div class="incense-container">
             <div class="incense-stick" id="stick1"><div class="smoke"></div></div>
@@ -184,8 +184,7 @@
     <div class="stats">
         <div class="stat-item">Công Đức Đã Tích<span id="cong-duc">0</span></div>
         <div class="stat-item">Thời Gian Tu Tập<span id="timer">00:00</span></div>
-        <!-- MỚI: Khung hiển thị số người đang đi chùa trực tuyến cùng bạn -->
-        <div class="stat-item online-box">🟢 Số Phật tử đang chiêm bái: <span id="online-count">12</span> người</div>
+        <div class="stat-item online-box">🟢 Số Phật tử đang chiêm bái: <span id="online-count">18</span> người</div>
     </div>
 
     <div class="controls">
@@ -205,6 +204,7 @@
         <div class="box-content" id="lich-noi-dung">Chọn giờ tốt để vạn sự hanh thông, xuất hành thuận lợi.</div>
     </div>
 
+    <!-- Kho âm thanh nhạc thiền sáo trúc tĩnh tâm và tiếng mõ đanh giòn -->
     <audio id="audio-bg" loop src="https://soundhelix.com"></audio> 
     <audio id="audio-mo" src="https://mixkit.co"></audio>
 
@@ -213,16 +213,16 @@
         let secondsLive = 0;
         let musicStarted = false;
 
-        // Tự động nhảy số lượng người đi chùa ngẫu nhiên cho sinh động giống thật
-        let onlinePeople = Math.floor(Math.random() * 20) + 15;
+        // Tạo số lượng người trực tuyến tăng giảm ngẫu nhiên liên tục
+        let onlinePeople = Math.floor(Math.random() * 15) + 20;
         document.getElementById('online-count').innerText = onlinePeople;
         
         setInterval(() => {
-            let bienDong = Math.random() > 0.5 ? 1 : -1;
-            onlinePeople += bienDong;
-            if (onlinePeople < 5) onlinePeople = 5;
+            let change = Math.random() > 0.5 ? 1 : -1;
+            onlinePeople += change;
+            if (onlinePeople < 6) onlinePeople = 6;
             document.getElementById('online-count').innerText = onlinePeople;
-        }, 4000);
+        }, 3500);
 
         setInterval(() => {
             if (musicStarted) {
@@ -236,7 +236,7 @@
         function goMo() {
             if (!musicStarted) {
                 let bgAudio = document.getElementById('audio-bg');
-                bgAudio.volume = 0.1;
+                bgAudio.volume = 0.15;
                 bgAudio.play().catch(function(e) {});
                 musicStarted = true;
             }
@@ -249,3 +249,5 @@
             setTimeout(function() { buddha.style.transform = "scale(1)"; }, 100);
 
             let moAudio = document.getElementById('audio-mo');
+            moAudio.currentTime = 0;
+            moAudio.volume = 1.0;
