@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chùa Hương Online - Tịnh Tâm Tu Tập</title>
+    <title>Chùa Hương Online - Đại Chánh Điện Trực Tiếp</title>
     <style>
         :root {
             --gold: #f1c40f;
             --dark-gold: #d4ac0d;
-            --bg-color: #141414;
+            --bg-color: #0f0f0f;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -16,238 +16,245 @@
             color: #fff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
-            overflow-x: hidden;
+            overflow: hidden;
         }
-        h1 { color: var(--gold); margin-bottom: 5px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); font-size: 1.8rem; text-align: center; }
-        .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; font-style: italic; text-align: center; }
         
-        .altar {
+        /* Giao diện khung Live dạng Điện thoại thời thượng */
+        .live-container {
             position: relative;
-            width: 100%;
+            width: 100vw;
+            height: 100vh;
             max-width: 450px;
+            max-height: 850px;
             background: linear-gradient(to bottom, #2c1a04, #000);
-            border: 4px solid var(--dark-gold);
-            border-radius: 15px;
-            padding: 30px 20px 20px 20px;
+            border: 4px solid #222;
+            border-radius: 20px;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        /* Thanh trạng thái Live phía trên */
+        .live-header {
+            position: absolute;
+            top: 15px; left: 15px; right: 15px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            z-index: 10;
+        }
+        .live-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 4px 10px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .viewer-count {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .viewer-count::before {
+            content: '👁️';
+        }
+
+        /* Khu vực Chánh Điện thờ Phật */
+        .buddha-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding-top: 60px;
+            position: relative;
         }
         .buddha-img {
-            width: 220px;
-            height: auto;
-            filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.7));
+            width: 240px;
+            filter: drop-shadow(0 0 25px rgba(241, 196, 15, 0.7));
             transition: transform 0.1s;
             z-index: 2;
         }
         
+        /* Khói hương nghi ngút */
         .incense-container {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-            position: relative;
-            height: 80px;
-            width: 100%;
+            gap: 12px;
+            margin-top: 10px;
+            height: 40px;
         }
         .incense-stick {
-            width: 3px;
-            height: 50px;
+            width: 3px; height: 35px;
             background-color: #8e44ad;
             position: relative;
-            bottom: -30px;
-            display: none;
+            border-radius: 2px;
         }
-        .incense-stick.active { display: block; }
         .incense-stick::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 50%;
-            width: 4px; height: 4px;
-            background-color: #ff5722;
-            border-radius: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 8px #ff5722;
+            content: ''; position: absolute; top: 0; left: 50%;
+            width: 4px; height: 4px; background-color: #ff5722;
+            border-radius: 50%; transform: translateX(-50%);
+            box-shadow: 0 0 6px #ff5722;
         }
         .smoke {
-            position: absolute;
-            top: -20px; left: -5px;
-            width: 12px; height: 30px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 50%;
-            filter: blur(4px);
-            animation: floatSmoke 3s infinite linear;
-            opacity: 0;
+            position: absolute; top: -25px; left: -5px;
+            width: 10px; height: 25px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%; filter: blur(3px);
+            animation: floatSmoke 2.5s infinite linear;
         }
-        .incense-stick.active .smoke { opacity: 1; }
         @keyframes floatSmoke {
             0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
-            20% { opacity: 0.4; }
-            50% { transform: translateY(-30px) scale(1.5) translateX(5px); opacity: 0.2; }
-            100% { transform: translateY(-60px) scale(2) translateX(-5px); opacity: 0; }
+            20% { opacity: 0.3; }
+            50% { transform: translateY(-20px) scale(1.4) translateX(4px); opacity: 0.15; }
+            100% { transform: translateY(-40px) scale(1.8) translateX(-4px); opacity: 0; }
         }
 
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-            max-width: 450px;
-            margin: 20px 0;
-            background: rgba(255,255,255,0.05);
+        /* Khung bình luận nhảy chữ liên tục ở góc trái dưới */
+        .chat-zone {
+            height: 200px;
             padding: 15px;
-            border-radius: 8px;
-            border: 1px solid rgba(241, 196, 15, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 5;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
         }
-        .stat-item { text-align: center; font-size: 0.9rem; color: #ccc; }
-        .stat-item span { display: block; color: var(--gold); font-size: 1.2rem; font-weight: bold; margin-top: 3px; }
-        .online-box { grid-column: span 2; border-top: 1px dashed rgba(241, 196, 15, 0.3); padding-top: 10px; margin-top: 5px; color: #2ecc71; font-weight: bold; }
-        .online-box span { color: #2ecc71; display: inline; font-size: 1.1rem; }
+        .chat-container {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            max-height: 100%;
+        }
+        .chat-message {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 6px 12px;
+            border-radius: 12px;
+            animation: slideIn 0.3s ease-out forwards;
+            width: fit-content;
+            max-width: 85%;
+            border-left: 3px solid var(--gold);
+        }
+        .chat-name { color: var(--gold); font-weight: bold; margin-right: 5px; }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .controls {
+        /* Thông báo đẩy Quà tặng/Công đức đặc biệt bên phải */
+        .gift-alert-zone {
+            position: absolute;
+            right: 15px;
+            bottom: 310px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+        .gift-alert {
+            background: linear-gradient(90deg, rgba(230, 126, 34, 0.9), rgba(0,0,0,0.4));
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #fff;
+            border: 1px solid var(--gold);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes popIn { from { transform: scale(0.5) translateX(50px); opacity: 0; } to { transform: scale(1) translateX(0); opacity: 1; } }
+
+        /* Bảng thống kê thông số */
+        .live-stats {
+            background: rgba(255,255,255,0.03);
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            font-size: 0.8rem;
+        }
+        .stat-val { color: var(--gold); font-weight: bold; font-size: 1rem; display: block; text-align: center; margin-top: 2px; }
+
+        /* Hệ thống nút bấm tương tác phía dưới */
+        .action-zone {
+            padding: 15px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-            max-width: 450px;
-            margin-top: 15px;
+            gap: 8px;
+            background-color: #080808;
         }
         button {
             background: linear-gradient(135deg, #d35400, #e67e22);
-            color: white;
-            border: 1px solid var(--gold);
-            padding: 12px;
-            font-size: 0.95rem;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            color: white; border: 1px solid var(--gold);
+            padding: 12px; font-size: 0.9rem; font-weight: bold;
+            border-radius: 10px; cursor: pointer; transition: all 0.15s;
         }
         button:active { transform: scale(0.95); }
         button.btn-incense { background: linear-gradient(135deg, #27ae60, #2ecc71); }
         button.btn-que { background: linear-gradient(135deg, #2c3e50, #34495e); }
-        button.btn-lich { background: linear-gradient(135deg, #8e44ad, #9b59b6); grid-column: span 2; }
-        
-        .floating-text {
-            position: absolute;
-            color: var(--gold);
-            font-weight: bold;
-            font-size: 1.1rem;
-            pointer-events: none;
-            animation: flyUp 0.8s ease-out forwards;
-            z-index: 10;
-        }
-        @keyframes flyUp {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-80px); opacity: 0; }
-        }
+        button.btn-lich { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
 
-        .result-box {
-            margin-top: 15px;
-            padding: 15px;
-            background: rgba(241, 196, 15, 0.08);
-            border: 1px dashed var(--gold);
-            border-radius: 8px;
-            text-align: center;
-            width: 100%;
-            max-width: 450px;
-            display: none;
-            animation: fadeIn 0.5s;
+        /* Chữ +1 Công đức bay màu vàng */
+        .floating-text {
+            position: absolute; color: var(--gold); font-weight: bold;
+            font-size: 1.1rem; pointer-events: none;
+            animation: flyUp 0.8s ease-out forwards; z-index: 10;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .box-title { color: var(--gold); font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; }
-        .box-content { font-size: 0.95rem; line-height: 1.4; color: #eee; }
+        @keyframes flyUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-70px); opacity: 0; } }
+
+        /* Hộp thoại hiển thị thông tin quẻ/lịch */
+        .display-modal {
+            position: absolute;
+            bottom: 230px; left: 15px; right: 15px;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid var(--gold);
+            border-radius: 12px; padding: 12px;
+            display: none; z-index: 15;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            animation: fadeInUp 0.3s;
+        }
+        @keyframes fadeInUp { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-title { color: var(--gold); font-weight: bold; font-size: 0.95rem; margin-bottom: 4px; display: flex; justify-content: space-between; }
+        .close-btn { cursor: pointer; color: #aaa; }
+        .modal-body { font-size: 0.85rem; line-height: 1.4; color: #ddd; }
     </style>
 </head>
 <body>
 
-    <h1>Chùa Hương Online</h1>
-    <div class="subtitle">Bật nhạc Thiền, gõ mõ tích đức, xin 72 quẻ linh ứng & xem lịch xuất hành</div>
-
-    <div class="altar" id="altar-zone">
-        <!-- Đường dẫn ảnh tượng Phật Thích Ca Mâu Ni mạ vàng chuẩn sắc nét không lỗi -->
-        <img class="buddha-img" id="buddha" src="https://postimg.cc" alt="Tượng Phật">
-        
-        <div class="incense-container">
-            <div class="incense-stick" id="stick1"><div class="smoke"></div></div>
-            <div class="incense-stick" id="stick2"><div class="smoke"></div></div>
-            <div class="incense-stick" id="stick3"><div class="smoke"></div></div>
+    <div class="live-container">
+        <!-- Thanh tiêu đề Live & Mắt xem thực tế ảo -->
+        <div class="live-header">
+            <div class="live-badge">TRỰC TIẾP</div>
+            <!-- Mắt xem nhảy liên tục lôi cuốn -->
+            <div class="viewer-count"><span id="live-viewers">1,245</span></div>
         </div>
-    </div>
 
-    <div class="stats">
-        <div class="stat-item">Công Đức Đã Tích<span id="cong-duc">0</span></div>
-        <div class="stat-item">Thời Gian Tu Tập<span id="timer">00:00</span></div>
-        <div class="stat-item online-box">🟢 Số Phật tử đang chiêm bái: <span id="online-count">18</span> người</div>
-    </div>
-
-    <div class="controls">
-        <button onclick="goMo()">Gõ Mõ Tích Đức</button>
-        <button class="btn-incense" onclick="thapHuong()">Thắp Hương</button>
-        <button class="btn-que" onclick="xinXam()">Xin 72 Quẻ Linh Xăm</button>
-        <button class="btn-lich" onclick="xemLichXuatHanh()">Xem Lịch Khởi Hành Bình An</button>
-    </div>
-
-    <div class="result-box" id="que-box">
-        <div class="box-title" id="que-ten">Quẻ Số 01: Đại Cát</div>
-        <div class="box-content" id="que-noi-dung">Mọi sự hanh thông, vạn điều bình an, gia đạo êm ấm.</div>
-    </div>
-
-    <div class="result-box" id="lich-box" style="background: rgba(142, 68, 173, 0.1); border-color: #8e44ad;">
-        <div class="box-title" id="lich-ten" style="color: #ffff;">Lịch Khởi Hành Cầu An</div>
-        <div class="box-content" id="lich-noi-dung">Chọn giờ tốt để vạn sự hanh thông, xuất hành thuận lợi.</div>
-    </div>
-
-    <!-- Kho âm thanh nhạc thiền sáo trúc tĩnh tâm và tiếng mõ đanh giòn -->
-    <audio id="audio-bg" loop src="https://soundhelix.com"></audio> 
-    <audio id="audio-mo" src="https://mixkit.co"></audio>
-
-    <script>
-        let score = 0;
-        let secondsLive = 0;
-        let musicStarted = false;
-
-        // Tạo số lượng người trực tuyến tăng giảm ngẫu nhiên liên tục
-        let onlinePeople = Math.floor(Math.random() * 15) + 20;
-        document.getElementById('online-count').innerText = onlinePeople;
-        
-        setInterval(() => {
-            let change = Math.random() > 0.5 ? 1 : -1;
-            onlinePeople += change;
-            if (onlinePeople < 6) onlinePeople = 6;
-            document.getElementById('online-count').innerText = onlinePeople;
-        }, 3500);
-
-        setInterval(() => {
-            if (musicStarted) {
-                secondsLive++;
-                let min = String(Math.floor(secondsLive / 60)).padStart(2, '0');
-                let sec = String(secondsLive % 60).padStart(2, '0');
-                document.getElementById('timer').innerText = min + ":" + sec;
-            }
-        }, 1000);
-
-        function goMo() {
-            if (!musicStarted) {
-                let bgAudio = document.getElementById('audio-bg');
-                bgAudio.volume = 0.15;
-                bgAudio.play().catch(function(e) {});
-                musicStarted = true;
-            }
-
-            score++;
-            document.getElementById('cong-duc').innerText = score;
-
-            let buddha = document.getElementById('buddha');
-            buddha.style.transform = "scale(0.95)";
-            setTimeout(function() { buddha.style.transform = "scale(1)"; }, 100);
-
-            let moAudio = document.getElementById('audio-mo');
-            moAudio.currentTime = 0;
-            moAudio.volume = 1.0;
+        <!-- Đại Chánh Điện -->
+        <div class="buddha-zone" id="altar">
+            <!-- Tượng Phật vàng SVG bảo đảm hiển thị sắc nét 100% không sợ lỗi link -->
+            <svg class="buddha-img" id="buddha" viewBox="0 0 100 100" xmlns="http://w3.org">
+                <circle cx="50" cy="35" r="18" fill="#f1c40f" opacity="0.3"/>
+                <circle cx="50" cy="35" r="14" fill="#f39c12"/>
+                <path d="M50 12 C47 18, 53 18, 50 12" fill="#d35400"/>
+                <circle cx="50" cy="30" r="7" fill="#f1c40f"/>
+                <path d="M35 55 C35 45, 65 45, 65 55 C65 65, 35 65, 35 55 Z" fill="#e67e22"/>
+                <path d="M30 65 C30 58, 70 58, 70 65 C70 75, 30 75, 30 65 Z" fill="#d35400"/>
+                <path d="M42 45 Q50 50 58 45" stroke="#f1c40f" stroke-width="2" fill="none"/>
