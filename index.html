@@ -3,67 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Chùa Online 3D</title>
+<title>Chùa Online 3D - Đầy đủ</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { overflow: hidden; font-family: 'Noto Serif', serif; background: #000; color: #f5e6c8; }
   #canvas { display: block; width: 100vw; height: 100vh; }
-  
-  #ui {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 10;
-  }
+  #ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
   #ui * { pointer-events: auto; }
-  
   .panel {
-    position: absolute; background: rgba(0,0,0,0.75);
+    position: absolute; background: rgba(0,0,0,0.78);
     border: 2px solid #c9a227; border-radius: 16px;
-    padding: 18px; backdrop-filter: blur(8px);
+    padding: 16px 20px; backdrop-filter: blur(10px);
   }
-  
   #loginPanel {
     top: 50%; left: 50%; transform: translate(-50%,-50%);
-    text-align: center; width: 320px;
+    text-align: center; width: 340px;
   }
-  #loginPanel h1 { font-size: 1.6rem; margin-bottom: 12px; text-shadow: 0 0 12px #ffd700; }
+  #loginPanel h1 { font-size: 1.7rem; margin-bottom: 10px; text-shadow: 0 0 15px #ffd700; }
   #loginPanel input {
-    width: 100%; padding: 12px; margin: 10px 0; border-radius: 30px;
+    width: 100%; padding: 12px; margin: 12px 0; border-radius: 30px;
     border: none; font-size: 1.1rem; text-align: center; font-family: inherit;
   }
-  
   .btn {
     background: linear-gradient(#c9a227, #8B6914);
-    color: #1a0a00; border: none; padding: 11px 22px;
+    color: #1a0a00; border: none; padding: 11px 20px;
     border-radius: 30px; font-weight: bold; cursor: pointer;
-    font-family: inherit; font-size: 1rem; margin: 6px;
+    font-family: inherit; font-size: 1rem; margin: 5px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn:hover:not(:disabled) { transform: translateY(-2px); }
-  
-  #hud {
-    top: 15px; left: 15px; display: none;
-  }
+  #hud { top: 12px; left: 12px; display: none; font-size: 0.95rem; }
   #actionPanel {
-    bottom: 20px; left: 50%; transform: translateX(-50%);
-    display: none; text-align: center; min-width: 280px;
+    bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: none; text-align: center; min-width: 300px;
   }
   #resultPanel {
     top: 50%; left: 50%; transform: translate(-50%,-50%);
-    display: none; max-width: 380px; text-align: center;
+    display: none; max-width: 400px; text-align: center;
   }
-  #resultPanel .que-so { font-size: 2rem; color: #ffd700; }
-  #resultPanel .que-ten { font-size: 1.3rem; margin: 8px 0; }
-  
+  #resultPanel .que-so { font-size: 2.1rem; color: #ffd700; }
+  #resultPanel .que-ten { font-size: 1.35rem; margin: 8px 0; }
   #musicBtn {
-    position: absolute; bottom: 20px; right: 20px;
-    width: 48px; height: 48px; border-radius: 50%;
-    font-size: 1.3rem; display: none;
+    position: absolute; bottom: 18px; right: 18px;
+    width: 52px; height: 52px; border-radius: 50%; font-size: 1.4rem; display: none;
   }
   #info {
-    position: absolute; bottom: 20px; left: 20px;
-    font-size: 0.85rem; opacity: 0.7; display: none;
+    position: absolute; bottom: 18px; left: 18px;
+    font-size: 0.82rem; opacity: 0.75; display: none;
   }
 </style>
 </head>
@@ -71,7 +59,6 @@
 <canvas id="canvas"></canvas>
 
 <div id="ui">
-  <!-- Login -->
   <div class="panel" id="loginPanel">
     <h1>🙏 Chùa Online 3D</h1>
     <p>Nhập tên để vào chùa</p>
@@ -80,15 +67,13 @@
     <button class="btn" onclick="login()">Vào Chùa</button>
   </div>
 
-  <!-- HUD -->
   <div class="panel" id="hud">
     <div id="userName"></div>
-    <div style="margin-top:6px;font-size:0.9rem" id="locName">Đang ở: Sân chùa</div>
+    <div style="margin-top:5px" id="locName">Đang ở: Sân chùa</div>
   </div>
 
-  <!-- Action -->
   <div class="panel" id="actionPanel">
-    <div id="statusText" style="margin-bottom:10px">Chọn một địa điểm hoặc thắp hương</div>
+    <div id="statusText" style="margin-bottom:10px">Click quả cầu vàng để đến khu vực</div>
     <button class="btn" id="lightBtn" onclick="lightIncense()" disabled>🕯️ Thắp Hương</button>
     <button class="btn" id="prayBtn" onclick="pray()" disabled>🙏 Cầu Nguyện</button>
     <button class="btn" id="drawBtn" onclick="drawQue()" disabled>🎋 Bốc Quẻ</button>
@@ -96,36 +81,39 @@
     <button class="btn" onclick="goHome()">🏠 Về Sân</button>
   </div>
 
-  <!-- Kết quả quẻ -->
   <div class="panel" id="resultPanel">
     <div class="que-so" id="queSo"></div>
     <div class="que-ten" id="queTen"></div>
-    <div id="queNoiDung" style="margin:12px 0;line-height:1.5"></div>
+    <div id="queNoiDung" style="margin:12px 0;line-height:1.55"></div>
     <button class="btn" onclick="closeResult()">Đóng</button>
   </div>
 
   <button class="btn" id="musicBtn" onclick="toggleMusic()">🔇</button>
-  <div id="info">Kéo chuột / chạm để xoay • Lăn để zoom</div>
+  <div id="info">Kéo để xoay • Lăn để zoom • Click quả cầu vàng</div>
 </div>
 
-<audio id="bgMusic" loop>
+<!-- Âm thanh -->
+<audio id="bgMusic" loop preload="auto">
   <source src="nhac-chua.mp3" type="audio/mpeg">
 </audio>
-<audio id="bellSound">
+<audio id="bellSound" preload="auto">
   <source src="chuong.mp3" type="audio/mpeg">
+</audio>
+<audio id="chantSound" loop preload="auto">
+  <source src="tung-kinh.mp3" type="audio/mpeg">
 </audio>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-// ===================== DỮ LIỆU =====================
 const locations = {
-  home: { name: "Sân chùa", pos: new THREE.Vector3(0, 8, 28), look: new THREE.Vector3(0, 5, 0) },
-  chinhdien: { name: "Chính Điện", pos: new THREE.Vector3(0, 6, 12), look: new THREE.Vector3(0, 4, 0) },
-  vuon: { name: "Vườn Thiền", pos: new THREE.Vector3(-18, 6, 8), look: new THREE.Vector3(-18, 3, 0) },
-  thap: { name: "Tháp Cổ", pos: new THREE.Vector3(18, 8, 10), look: new THREE.Vector3(18, 10, 0) },
-  ao: { name: "Ao Sen", pos: new THREE.Vector3(0, 5, -18), look: new THREE.Vector3(0, 2, -25) },
-  quanam: { name: "Điện Quan Âm", pos: new THREE.Vector3(-12, 6, -12), look: new THREE.Vector3(-12, 4, -18) }
+  home:     { name: "Sân chùa",      pos: new THREE.Vector3(0, 9, 32), look: new THREE.Vector3(0, 4, 0) },
+  chinhdien:{ name: "Chính Điện",    pos: new THREE.Vector3(0, 6, 14), look: new THREE.Vector3(0, 4, 0) },
+  vuon:     { name: "Vườn Thiền",    pos: new THREE.Vector3(-20, 6, 10), look: new THREE.Vector3(-20, 3, 0) },
+  thap:     { name: "Tháp Cổ",       pos: new THREE.Vector3(20, 9, 12), look: new THREE.Vector3(20, 8, 0) },
+  ao:       { name: "Ao Sen",        pos: new THREE.Vector3(0, 5, -16), look: new THREE.Vector3(0, 2, -24) },
+  quanam:   { name: "Điện Quan Âm",  pos: new THREE.Vector3(-14, 6, -10), look: new THREE.Vector3(-14, 4, -16) },
+  thien:    { name: "Nhà Thiền",     pos: new THREE.Vector3(12, 5, -12), look: new THREE.Vector3(12, 3, -18) }
 };
 
 const queList = [];
@@ -152,316 +140,369 @@ for (let i = 1; i <= 72; i++) {
   });
 }
 
-// ===================== BIẾN TOÀN CỤC =====================
 let scene, camera, renderer, controls;
-let currentUser = null;
-let currentLoc = "home";
-let incenseLit = false;
-let musicOn = false;
-let incenseParticles = [];
-let hotspots = [];
+let currentUser = null, currentLoc = "home", incenseLit = false, musicOn = false;
+let incenseParticles = [], hotspots = [], walkingPeople = [], sittingPeople = [];
 let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 let clock = new THREE.Clock();
 
-// ===================== KHỞI TẠO 3D =====================
 function init3D() {
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0a0500);
-  scene.fog = new THREE.FogExp2(0x1a0a00, 0.018);
+  scene.fog = new THREE.FogExp2(0x1a0a00, 0.016);
 
-  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 250);
   camera.position.copy(locations.home.pos);
 
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
 
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  controls.dampingFactor = 0.08;
-  controls.minDistance = 5;
-  controls.maxDistance = 50;
-  controls.maxPolarAngle = Math.PI / 2.1;
+  controls.dampingFactor = 0.07;
+  controls.minDistance = 6;
+  controls.maxDistance = 55;
+  controls.maxPolarAngle = Math.PI / 2.05;
   controls.target.copy(locations.home.look);
 
   // Ánh sáng
-  const ambient = new THREE.AmbientLight(0xffe0a0, 0.4);
-  scene.add(ambient);
-
-  const dir = new THREE.DirectionalLight(0xfff0d0, 0.9);
-  dir.position.set(20, 40, 20);
+  scene.add(new THREE.AmbientLight(0xffe8c0, 0.45));
+  const dir = new THREE.DirectionalLight(0xfff5e0, 1.0);
+  dir.position.set(25, 45, 20);
   dir.castShadow = true;
-  dir.shadow.mapSize.set(1024, 1024);
   scene.add(dir);
-
-  const point1 = new THREE.PointLight(0xffaa33, 1.2, 30);
-  point1.position.set(0, 8, 5);
-  scene.add(point1);
+  const goldLight = new THREE.PointLight(0xffcc55, 1.4, 35);
+  goldLight.position.set(0, 9, 4);
+  scene.add(goldLight);
 
   // Đất
-  const groundGeo = new THREE.PlaneGeometry(80, 80);
-  const groundMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.9 });
-  const ground = new THREE.Mesh(groundGeo, groundMat);
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(100, 100),
+    new THREE.MeshStandardMaterial({ color: 0x3a2a1c, roughness: 0.92 })
+  );
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // ===== XÂY DỰNG CHÙA =====
-  buildTemple();
+  buildMainHall();
+  buildBuddhaStatue();
   buildGarden();
   buildPagoda();
   buildPond();
   buildQuanAm();
+  buildMeditationHall();
   createHotspots();
+  createWalkingPeople();
+  createSittingPeople();
 
-  // Particle khói hương (tạo sẵn)
-  createIncenseSystem();
-
-  window.addEventListener('resize', onResize);
+  window.addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+  });
   renderer.domElement.addEventListener('pointerdown', onPointerDown);
 
   animate();
 }
 
-function buildTemple() {
-  // Nền chính điện
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(14, 1.5, 12),
-    new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
+// ========== TƯỢNG PHẬT ==========
+function buildBuddhaStatue() {
+  const group = new THREE.Group();
+
+  // Đài sen
+  const lotus = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.8, 2.2, 0.6, 12),
+    new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.5, roughness: 0.3 })
   );
-  base.position.set(0, 0.75, 0);
+  lotus.position.y = 0.3;
+  group.add(lotus);
+
+  // Thân
+  const body = new THREE.Mesh(
+    new THREE.SphereGeometry(1.35, 24, 24),
+    new THREE.MeshStandardMaterial({ color: 0xffe066, metalness: 0.35, roughness: 0.4 })
+  );
+  body.position.y = 2.0;
+  body.scale.set(1, 1.25, 0.9);
+  group.add(body);
+
+  // Đầu
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.85, 20, 20),
+    new THREE.MeshStandardMaterial({ color: 0xffec99, metalness: 0.3, roughness: 0.45 })
+  );
+  head.position.y = 3.7;
+  group.add(head);
+
+  // Tóc / búi
+  const hair = new THREE.Mesh(
+    new THREE.SphereGeometry(0.55, 12, 12),
+    new THREE.MeshStandardMaterial({ color: 0x222222 })
+  );
+  hair.position.y = 4.35;
+  group.add(hair);
+
+  // Áo choàng đơn giản
+  const robe = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.5, 1.8, 2.2, 16, 1, true),
+    new THREE.MeshStandardMaterial({ color: 0xd4a017, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+  );
+  robe.position.y = 1.6;
+  group.add(robe);
+
+  group.position.set(0, 2.2, -1.5);
+  scene.add(group);
+
+  // Ánh sáng riêng cho tượng
+  const buddhaLight = new THREE.PointLight(0xffd700, 1.8, 12);
+  buddhaLight.position.set(0, 6, 1);
+  scene.add(buddhaLight);
+}
+
+// ========== CHÍNH ĐIỆN ==========
+function buildMainHall() {
+  const base = new THREE.Mesh(new THREE.BoxGeometry(16, 1.6, 13), new THREE.MeshStandardMaterial({ color: 0x5c3a21 }));
+  base.position.set(0, 0.8, 0);
   base.castShadow = true;
   scene.add(base);
 
-  // Tường
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-  const wall = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 10), wallMat);
-  wall.position.set(0, 4.5, 0);
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(14, 7, 11), new THREE.MeshStandardMaterial({ color: 0x7a4a28 }));
+  wall.position.set(0, 5, 0);
   wall.castShadow = true;
   scene.add(wall);
 
-  // Mái
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(10, 4, 4), roofMat);
-  roof.position.set(0, 9.5, 0);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(11, 4.5, 4), new THREE.MeshStandardMaterial({ color: 0x8B0000 }));
+  roof.position.set(0, 10.5, 0);
   roof.rotation.y = Math.PI / 4;
   roof.castShadow = true;
   scene.add(roof);
 
   // Cột
-  for (let x of [-5, 5]) {
-    const col = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.4, 0.5, 6, 8),
-      new THREE.MeshStandardMaterial({ color: 0x4a2c0b })
-    );
-    col.position.set(x, 4.5, 5.5);
+  [-6, 6].forEach(x => {
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 7, 10), new THREE.MeshStandardMaterial({ color: 0x4a2c0b }));
+    col.position.set(x, 5, 6);
     col.castShadow = true;
     scene.add(col);
-  }
-
-  // Tượng Phật đơn giản
-  const buddhaGroup = new THREE.Group();
-  const body = new THREE.Mesh(
-    new THREE.SphereGeometry(1.2, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.6, roughness: 0.3 })
-  );
-  body.position.y = 1.5;
-  buddhaGroup.add(body);
-
-  const head = new THREE.Mesh(
-    new THREE.SphereGeometry(0.7, 16, 16),
-    new THREE.MeshStandardMaterial({ color: 0xffe066 })
-  );
-  head.position.y = 3.1;
-  buddhaGroup.add(head);
-
-  buddhaGroup.position.set(0, 2.5, -2);
-  scene.add(buddhaGroup);
-
-  // Bàn thờ / chỗ thắp hương
-  const altar = new THREE.Mesh(
-    new THREE.BoxGeometry(4, 0.8, 1.5),
-    new THREE.MeshStandardMaterial({ color: 0x3d1c00 })
-  );
-  altar.position.set(0, 1.9, 3);
-  scene.add(altar);
-}
-
-function buildGarden() {
-  // Cây
-  for (let i = 0; i < 8; i++) {
-    const tree = new THREE.Group();
-    const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.3, 0.4, 3, 6),
-      new THREE.MeshStandardMaterial({ color: 0x4a3728 })
-    );
-    trunk.position.y = 1.5;
-    tree.add(trunk);
-    const leaves = new THREE.Mesh(
-      new THREE.SphereGeometry(1.8, 8, 8),
-      new THREE.MeshStandardMaterial({ color: 0x2d5a27 })
-    );
-    leaves.position.y = 3.8;
-    tree.add(leaves);
-    tree.position.set(-18 + (i % 4) * 3, 0, -5 + Math.floor(i / 4) * 6);
-    scene.add(tree);
-  }
-}
-
-function buildPagoda() {
-  const pagoda = new THREE.Group();
-  const colors = [0x8B0000, 0x5c0000, 0x8B0000];
-  for (let i = 0; i < 5; i++) {
-    const size = 4 - i * 0.5;
-    const level = new THREE.Mesh(
-      new THREE.BoxGeometry(size, 1.8, size),
-      new THREE.MeshStandardMaterial({ color: colors[i % 3] })
-    );
-    level.position.y = 1 + i * 2.2;
-    pagoda.add(level);
-
-    const roof = new THREE.Mesh(
-      new THREE.ConeGeometry(size * 0.9, 1.2, 4),
-      new THREE.MeshStandardMaterial({ color: 0x4a0000 })
-    );
-    roof.position.y = 2.1 + i * 2.2;
-    roof.rotation.y = Math.PI / 4;
-    pagoda.add(roof);
-  }
-  pagoda.position.set(18, 0, 0);
-  scene.add(pagoda);
-}
-
-function buildPond() {
-  const water = new THREE.Mesh(
-    new THREE.CircleGeometry(8, 32),
-    new THREE.MeshStandardMaterial({ color: 0x1a4a5c, transparent: true, opacity: 0.7, roughness: 0.1 })
-  );
-  water.rotation.x = -Math.PI / 2;
-  water.position.set(0, 0.05, -25);
-  scene.add(water);
-
-  // Sen
-  for (let i = 0; i < 6; i++) {
-    const lotus = new THREE.Mesh(
-      new THREE.SphereGeometry(0.4, 8, 8),
-      new THREE.MeshStandardMaterial({ color: 0xff69b4 })
-    );
-    const angle = (i / 6) * Math.PI * 2;
-    lotus.position.set(Math.cos(angle) * 3, 0.3, -25 + Math.sin(angle) * 3);
-    scene.add(lotus);
-  }
-}
-
-function buildQuanAm() {
-  const base = new THREE.Mesh(
-    new THREE.BoxGeometry(8, 1, 6),
-    new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
-  );
-  base.position.set(-12, 0.5, -18);
-  scene.add(base);
-
-  const hall = new THREE.Mesh(
-    new THREE.BoxGeometry(6, 5, 5),
-    new THREE.MeshStandardMaterial({ color: 0x6b4423 })
-  );
-  hall.position.set(-12, 3.5, -18);
-  scene.add(hall);
-
-  const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(5, 3, 4),
-    new THREE.MeshStandardMaterial({ color: 0x8B0000 })
-  );
-  roof.position.set(-12, 7.5, -18);
-  roof.rotation.y = Math.PI / 4;
-  scene.add(roof);
-}
-
-function createHotspots() {
-  const positions = [
-    { name: "chinhdien", pos: [0, 2, 5] },
-    { name: "vuon", pos: [-18, 2, 2] },
-    { name: "thap", pos: [18, 2, 5] },
-    { name: "ao", pos: [0, 2, -18] },
-    { name: "quanam", pos: [-12, 2, -14] }
-  ];
-
-  positions.forEach(p => {
-    const geo = new THREE.SphereGeometry(0.6, 12, 12);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.7 });
-    const sphere = new THREE.Mesh(geo, mat);
-    sphere.position.set(...p.pos);
-    sphere.userData = { type: "hotspot", loc: p.name };
-    scene.add(sphere);
-    hotspots.push(sphere);
-
-    // Ánh sáng nhỏ
-    const light = new THREE.PointLight(0xffd700, 0.6, 5);
-    light.position.copy(sphere.position);
-    scene.add(light);
   });
-}
 
-function createIncenseSystem() {
-  // 3 que hương tại chính điện
+  // Bàn thờ
+  const altar = new THREE.Mesh(new THREE.BoxGeometry(5, 0.9, 1.8), new THREE.MeshStandardMaterial({ color: 0x3d1c00 }));
+  altar.position.set(0, 2.1, 4);
+  scene.add(altar);
+
+  // 3 que hương
   for (let i = -1; i <= 1; i++) {
-    const stick = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6),
-      new THREE.MeshStandardMaterial({ color: 0x8B4513 })
-    );
-    stick.position.set(i * 0.4, 2.8, 3.2);
+    const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.3, 6), new THREE.MeshStandardMaterial({ color: 0x8B4513 }));
+    stick.position.set(i * 0.45, 3.0, 4.3);
     scene.add(stick);
   }
 }
 
-// Particle khói
-function addSmoke() {
-  const particleCount = 80;
-  const geometry = new THREE.BufferGeometry();
-  const positions = new Float32Array(particleCount * 3);
-  const velocities = [];
-
-  for (let i = 0; i < particleCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 0.8;
-    positions[i * 3 + 1] = Math.random() * 0.5;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
-    velocities.push({
-      x: (Math.random() - 0.5) * 0.01,
-      y: 0.02 + Math.random() * 0.02,
-      z: (Math.random() - 0.5) * 0.01
-    });
+// ========== VƯỜN + CÂY ==========
+function buildGarden() {
+  for (let i = 0; i < 10; i++) {
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.38, 3.2, 7), new THREE.MeshStandardMaterial({ color: 0x4a3728 }));
+    trunk.position.y = 1.6;
+    tree.add(trunk);
+    const leaves = new THREE.Mesh(new THREE.SphereGeometry(1.9, 8, 8), new THREE.MeshStandardMaterial({ color: 0x2d5a27 }));
+    leaves.position.y = 4.0;
+    tree.add(leaves);
+    tree.position.set(-22 + (i % 5) * 3.5, 0, -6 + Math.floor(i / 5) * 7);
+    scene.add(tree);
   }
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-  const material = new THREE.PointsMaterial({
-    color: 0xcccccc,
-    size: 0.25,
-    transparent: true,
-    opacity: 0.5,
-    depthWrite: false
-  });
-
-  const particles = new THREE.Points(geometry, material);
-  particles.position.set(0, 3.5, 3.2);
-  particles.userData = { velocities, life: 0 };
-  scene.add(particles);
-  incenseParticles.push(particles);
 }
 
-// ===================== TƯƠNG TÁC =====================
-function onPointerDown(event) {
-  if (!currentUser) return;
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(hotspots);
-  if (intersects.length > 0) {
-    const loc = intersects[0].object.userData.loc;
-    goTo(loc);
+// ========== THÁP ==========
+function buildPagoda() {
+  const pagoda = new THREE.Group();
+  for (let i = 0; i < 5; i++) {
+    const size = 4.2 - i * 0.55;
+    const level = new THREE.Mesh(new THREE.BoxGeometry(size, 1.9, size), new THREE.MeshStandardMaterial({ color: i % 2 ? 0x8B0000 : 0x5c0000 }));
+    level.position.y = 1.1 + i * 2.3;
+    pagoda.add(level);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(size * 0.95, 1.3, 4), new THREE.MeshStandardMaterial({ color: 0x4a0000 }));
+    roof.position.y = 2.2 + i * 2.3;
+    roof.rotation.y = Math.PI / 4;
+    pagoda.add(roof);
   }
+  pagoda.position.set(20, 0, 0);
+  scene.add(pagoda);
+}
+
+// ========== AO SEN ==========
+function buildPond() {
+  const water = new THREE.Mesh(
+    new THREE.CircleGeometry(9, 40),
+    new THREE.MeshStandardMaterial({ color: 0x1a4a5c, transparent: true, opacity: 0.75, roughness: 0.15 })
+  );
+  water.rotation.x = -Math.PI / 2;
+  water.position.set(0, 0.06, -26);
+  scene.add(water);
+
+  for (let i = 0; i < 8; i++) {
+    const lotus = new THREE.Mesh(new THREE.SphereGeometry(0.38, 8, 8), new THREE.MeshStandardMaterial({ color: 0xff69b4 }));
+    const a = (i / 8) * Math.PI * 2;
+    lotus.position.set(Math.cos(a) * 4, 0.35, -26 + Math.sin(a) * 4);
+    scene.add(lotus);
+  }
+}
+
+// ========== ĐIỆN QUAN ÂM ==========
+function buildQuanAm() {
+  const base = new THREE.Mesh(new THREE.BoxGeometry(9, 1.1, 7), new THREE.MeshStandardMaterial({ color: 0x5c3a21 }));
+  base.position.set(-14, 0.55, -16);
+  scene.add(base);
+  const hall = new THREE.Mesh(new THREE.BoxGeometry(7, 5.5, 5.5), new THREE.MeshStandardMaterial({ color: 0x6b4423 }));
+  hall.position.set(-14, 3.8, -16);
+  scene.add(hall);
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(5.5, 3.2, 4), new THREE.MeshStandardMaterial({ color: 0x8B0000 }));
+  roof.position.set(-14, 8, -16);
+  roof.rotation.y = Math.PI / 4;
+  scene.add(roof);
+}
+
+// ========== NHÀ THIỀN + CHỖ NGỒI TỤNG KINH ==========
+function buildMeditationHall() {
+  // Nền nhà thiền
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(10, 0.4, 8), new THREE.MeshStandardMaterial({ color: 0x4a3728 }));
+  floor.position.set(12, 0.2, -18);
+  scene.add(floor);
+
+  // Mái đơn giản
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(11, 0.3, 9), new THREE.MeshStandardMaterial({ color: 0x5c0000 }));
+  roof.position.set(12, 4.5, -18);
+  scene.add(roof);
+
+  // Cột
+  [[8, -14.5], [16, -14.5], [8, -21.5], [16, -21.5]].forEach(([x, z]) => {
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 4.2, 8), new THREE.MeshStandardMaterial({ color: 0x3d1c00 }));
+    col.position.set(x, 2.3, z);
+    scene.add(col);
+  });
+
+  // Băng ghế ngồi tụng kinh
+  for (let i = 0; i < 3; i++) {
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.35, 0.7), new THREE.MeshStandardMaterial({ color: 0x5c3a21 }));
+    bench.position.set(12, 0.55, -15.5 - i * 2.2);
+    scene.add(bench);
+  }
+}
+
+// ========== NGƯỜI ĐI LẠI ==========
+function createPerson(x, z, color = 0x8B4513) {
+  const g = new THREE.Group();
+  // Thân
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.32, 1.1, 8), new THREE.MeshStandardMaterial({ color }));
+  body.position.y = 1.1;
+  g.add(body);
+  // Đầu
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 10, 10), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+  head.position.y = 1.9;
+  g.add(head);
+  // Áo
+  const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.5, 1.3, 10), new THREE.MeshStandardMaterial({ color: 0xd4a017, transparent: true, opacity: 0.9 }));
+  robe.position.y = 0.9;
+  g.add(robe);
+
+  g.position.set(x, 0, z);
+  g.userData = {
+    baseX: x, baseZ: z,
+    angle: Math.random() * Math.PI * 2,
+    speed: 0.4 + Math.random() * 0.5,
+    radius: 3 + Math.random() * 4
+  };
+  scene.add(g);
+  return g;
+}
+
+function createWalkingPeople() {
+  // Vài người đi quanh sân và vườn
+  walkingPeople.push(createPerson(-8, 10, 0x8B4513));
+  walkingPeople.push(createPerson(8, 12, 0x5c3a21));
+  walkingPeople.push(createPerson(-15, 5, 0x6b4423));
+  walkingPeople.push(createPerson(5, -5, 0x4a2c0b));
+  walkingPeople.push(createPerson(15, 8, 0x8B4513));
+}
+
+// ========== NGƯỜI NGỒI TỤNG KINH ==========
+function createSittingPerson(x, z) {
+  const g = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 12), new THREE.MeshStandardMaterial({ color: 0xd4a017 }));
+  body.position.y = 0.7;
+  body.scale.set(1, 0.9, 1);
+  g.add(body);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 10), new THREE.MeshStandardMaterial({ color: 0xffdbac }));
+  head.position.y = 1.35;
+  g.add(head);
+  g.position.set(x, 0.4, z);
+  scene.add(g);
+  sittingPeople.push(g);
+}
+
+function createSittingPeople() {
+  // Ngồi trong nhà thiền
+  createSittingPerson(10.5, -15.5);
+  createSittingPerson(13.5, -15.5);
+  createSittingPerson(10.5, -17.7);
+  createSittingPerson(13.5, -17.7);
+  createSittingPerson(12, -19.9);
+}
+
+// ========== HOTSPOT ==========
+function createHotspots() {
+  const list = [
+    { name: "chinhdien", pos: [0, 2.2, 6] },
+    { name: "vuon", pos: [-20, 2.2, 3] },
+    { name: "thap", pos: [20, 2.2, 6] },
+    { name: "ao", pos: [0, 2.2, -16] },
+    { name: "quanam", pos: [-14, 2.2, -12] },
+    { name: "thien", pos: [12, 2.2, -12] }
+  ];
+  list.forEach(p => {
+    const s = new THREE.Mesh(
+      new THREE.SphereGeometry(0.55, 14, 14),
+      new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.75 })
+    );
+    s.position.set(...p.pos);
+    s.userData = { type: "hotspot", loc: p.name };
+    scene.add(s);
+    hotspots.push(s);
+  });
+}
+
+// ========== KHÓI HƯƠNG ==========
+function addSmoke() {
+  const count = 100;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  const vels = [];
+  for (let i = 0; i < count; i++) {
+    pos[i*3] = (Math.random()-0.5)*1.0;
+    pos[i*3+1] = Math.random()*0.6;
+    pos[i*3+2] = (Math.random()-0.5)*0.4;
+    vels.push({ x:(Math.random()-0.5)*0.012, y:0.025+Math.random()*0.02, z:(Math.random()-0.5)*0.012 });
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ color: 0xdddddd, size: 0.28, transparent: true, opacity: 0.55, depthWrite: false });
+  const pts = new THREE.Points(geo, mat);
+  pts.position.set(0, 3.6, 4.3);
+  pts.userData = { velocities: vels };
+  scene.add(pts);
+  incenseParticles.push(pts);
+}
+
+// ========== TƯƠNG TÁC ==========
+function onPointerDown(e) {
+  if (!currentUser) return;
+  mouse.x = (e.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(hotspots);
+  if (hits.length) goTo(hits[0].object.userData.loc);
 }
 
 function goTo(loc) {
@@ -473,30 +514,36 @@ function goTo(loc) {
   document.getElementById('prayBtn').disabled = true;
   document.getElementById('drawBtn').disabled = true;
 
-  // Di chuyển camera mượt
-  const targetPos = locations[loc].pos;
-  const targetLook = locations[loc].look;
-  animateCamera(targetPos, targetLook);
+  // Bật tiếng tụng kinh khi vào nhà thiền
+  const chant = document.getElementById('chantSound');
+  if (loc === "thien") {
+    chant.volume = 0.35;
+    chant.play().catch(()=>{});
+  } else {
+    chant.pause();
+  }
+
+  animateCamera(locations[loc].pos, locations[loc].look);
 }
 
 function goHome() {
   goTo("home");
-  document.getElementById('statusText').textContent = "Chọn điểm vàng để đến các khu vực";
+  document.getElementById('statusText').textContent = "Click quả cầu vàng để đến khu vực";
   document.getElementById('lightBtn').disabled = true;
+  document.getElementById('chantSound').pause();
 }
 
 function animateCamera(pos, look) {
-  const startPos = camera.position.clone();
-  const startLook = controls.target.clone();
+  const startP = camera.position.clone();
+  const startL = controls.target.clone();
   let t = 0;
-  function step() {
-    t += 0.03;
+  (function step() {
+    t += 0.028;
     if (t > 1) t = 1;
-    camera.position.lerpVectors(startPos, pos, t);
-    controls.target.lerpVectors(startLook, look, t);
+    camera.position.lerpVectors(startP, pos, t);
+    controls.target.lerpVectors(startL, look, t);
     if (t < 1) requestAnimationFrame(step);
-  }
-  step();
+  })();
 }
 
 function lightIncense() {
@@ -520,7 +567,6 @@ function drawQue() {
   document.getElementById('drawBtn').disabled = true;
   document.getElementById('statusText').textContent = "Đang gieo quẻ...";
   playBell();
-
   setTimeout(() => {
     const q = queList[Math.floor(Math.random() * 72)];
     document.getElementById('queSo').textContent = "Quẻ số " + q.so;
@@ -528,16 +574,11 @@ function drawQue() {
     document.getElementById('queNoiDung').textContent = q.noiDung;
     document.getElementById('resultPanel').style.display = "block";
 
-    // Lưu lịch sử
     const key = "chua3d_" + currentUser;
     const data = JSON.parse(localStorage.getItem(key) || '{"history":[]}');
-    data.history.push({
-      time: new Date().toLocaleString("vi-VN"),
-      loc: locations[currentLoc].name,
-      que: `Quẻ ${q.so}`
-    });
+    data.history.push({ time: new Date().toLocaleString("vi-VN"), loc: locations[currentLoc].name, que: "Quẻ " + q.so });
     localStorage.setItem(key, JSON.stringify(data));
-  }, 1500);
+  }, 1600);
 }
 
 function closeResult() {
@@ -545,20 +586,17 @@ function closeResult() {
   document.getElementById('statusText').textContent = "Nam Mô A Di Đà Phật";
 }
 
-// ===================== TÀI KHOẢN & NHẠC =====================
 function login() {
   const name = document.getElementById("username").value.trim();
-  if (!name) return alert("Nhập tên đi bạn!");
+  if (!name) return alert("Vui lòng nhập tên!");
   currentUser = name;
   localStorage.setItem("chua3d_user", name);
-
   document.getElementById("loginPanel").style.display = "none";
   document.getElementById("hud").style.display = "block";
   document.getElementById("actionPanel").style.display = "block";
   document.getElementById("musicBtn").style.display = "block";
   document.getElementById("info").style.display = "block";
   document.getElementById("userName").textContent = "Xin chào, " + name;
-
   init3D();
 }
 
@@ -568,7 +606,8 @@ function toggleMusic() {
     bg.pause();
     document.getElementById("musicBtn").textContent = "🔇";
   } else {
-    bg.play().catch(() => {});
+    bg.volume = 0.45;
+    bg.play().catch(()=>{});
     document.getElementById("musicBtn").textContent = "🔊";
   }
   musicOn = !musicOn;
@@ -577,53 +616,55 @@ function toggleMusic() {
 function playBell() {
   const bell = document.getElementById("bellSound");
   bell.currentTime = 0;
-  bell.play().catch(() => {});
+  bell.volume = 0.7;
+  bell.play().catch(()=>{});
 }
 
-// ===================== ANIMATION =====================
+// ========== ANIMATION ==========
 function animate() {
   requestAnimationFrame(animate);
-  const dt = clock.getDelta();
+  const t = clock.getElapsedTime();
 
   controls.update();
 
-  // Cập nhật khói
+  // Khói
   incenseParticles.forEach(p => {
-    const pos = p.geometry.attributes.position.array;
+    const arr = p.geometry.attributes.position.array;
     const vels = p.userData.velocities;
     for (let i = 0; i < vels.length; i++) {
-      pos[i * 3] += vels[i].x;
-      pos[i * 3 + 1] += vels[i].y;
-      pos[i * 3 + 2] += vels[i].z;
-      if (pos[i * 3 + 1] > 4) {
-        pos[i * 3 + 1] = 0;
-        pos[i * 3] = (Math.random() - 0.5) * 0.8;
+      arr[i*3] += vels[i].x;
+      arr[i*3+1] += vels[i].y;
+      arr[i*3+2] += vels[i].z;
+      if (arr[i*3+1] > 5) {
+        arr[i*3+1] = 0;
+        arr[i*3] = (Math.random()-0.5)*1.0;
       }
     }
     p.geometry.attributes.position.needsUpdate = true;
-    p.material.opacity = 0.4 + Math.sin(Date.now() * 0.002) * 0.15;
+    p.material.opacity = 0.4 + Math.sin(t * 2) * 0.15;
   });
 
-  // Nhấp nháy hotspot
+  // Người đi lại
+  walkingPeople.forEach(p => {
+    const d = p.userData;
+    d.angle += d.speed * 0.008;
+    p.position.x = d.baseX + Math.cos(d.angle) * d.radius;
+    p.position.z = d.baseZ + Math.sin(d.angle) * d.radius;
+    p.rotation.y = -d.angle + Math.PI / 2;
+  });
+
+  // Hotspot nhấp nháy
   hotspots.forEach((h, i) => {
-    h.material.opacity = 0.5 + Math.sin(Date.now() * 0.003 + i) * 0.3;
+    h.material.opacity = 0.5 + Math.sin(t * 3 + i) * 0.3;
+    h.position.y = 2.2 + Math.sin(t * 2 + i) * 0.15;
   });
 
   renderer.render(scene, camera);
 }
 
-function onResize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// Tự login nếu đã có
 window.onload = () => {
   const saved = localStorage.getItem("chua3d_user");
-  if (saved) {
-    document.getElementById("username").value = saved;
-  }
+  if (saved) document.getElementById("username").value = saved;
 };
 </script>
 </body>
