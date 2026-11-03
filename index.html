@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chùa Hương Online - Tịnh Tâm Tu Tập</title>
+    <style>
+        :root {
+            --gold: #f1c40f;
+            --dark-gold: #d4ac0d;
+            --bg-color: #141414;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        h1 { color: var(--gold); margin-bottom: 5px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); font-size: 1.8rem; }
+        .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; font-style: italic; }
+        
+        .altar {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            background: linear-gradient(to bottom, #2c1a04, #000);
+            border: 4px solid var(--dark-gold);
+            border-radius: 15px;
+            padding: 30px 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .buddha-img {
+            width: 200px;
+            filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.6));
+            transition: transform 0.1s;
+            z-index: 2;
+        }
+        
+        .incense-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            position: relative;
+            height: 80px;
+            width: 100%;
+        }
+        .incense-stick {
+            width: 3px;
+            height: 50px;
+            background-color: #8e44ad;
+            position: relative;
+            bottom: -30px;
+            display: none;
+        }
+        .incense-stick.active { display: block; }
+        .incense-stick::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 50%;
+            width: 4px; height: 4px;
+            background-color: #ff5722;
+            border-radius: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 8px #ff5722;
+        }
+        .smoke {
+            position: absolute;
+            top: -20px; left: -5px;
+            width: 12px; height: 30px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+            filter: blur(4px);
+            animation: floatSmoke 3s infinite linear;
+            opacity: 0;
+        }
+        .incense-stick.active .smoke { opacity: 1; }
+        @keyframes floatSmoke {
+            0% { transform: translateY(0) scale(1) translateX(0); opacity: 0; }
+            20% { opacity: 0.4; }
+            50% { transform: translateY(-30px) scale(1.5) translateX(5px); opacity: 0.2; }
+            100% { transform: translateY(-60px) scale(2) translateX(-5px); opacity: 0; }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin: 20px 0;
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(241, 196, 15, 0.2);
+        }
+        .stat-item { text-align: center; font-size: 0.9rem; color: #ccc; }
+        .stat-item span { display: block; color: var(--gold); font-size: 1.2rem; font-weight: bold; margin-top: 3px; }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 450px;
+            margin-top: 15px;
+        }
+        button {
+            background: linear-gradient(135deg, #d35400, #e67e22);
+            color: white;
+            border: 1px solid var(--gold);
+            padding: 12px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        button:active { transform: scale(0.95); }
+        button.btn-que { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        button.btn-incense { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        
+        .floating-text {
+            position: absolute;
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1rem;
+            pointer-events: none;
+            animation: flyUp 0.8s ease-out forwards;
+            z-index: 10;
+        }
+        @keyframes flyUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-80px); opacity: 0; }
+        }
+
+        .que-result {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(241, 196, 15, 0.1);
+            border: 1px dashed var(--gold);
+            border-radius: 8px;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .que-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>Chùa Hương Online</h1>
+    <div class="subtitle">Bấm nút bật nhạc Thiền, gõ mõ tích công đức và tĩnh tâm</div>
+
+    <div class="altar" id="altar-zone">
+        <!-- Đường dẫn ảnh tượng Phật công cộng sử dụng tạm thời -->
+        <img class="buddha-img" id="buddha" src="https://unsplash.com" alt="Tượng Phật">
+        
+        <div class="incense-container">
+            <div class="incense-stick" id="stick1"><div class="smoke"></div></div>
+            <div class="incense-stick" id="stick2"><div class="smoke"></div></div>
+            <div class="incense-stick" id="stick3"><div class="smoke"></div></div>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div class="stat-item">Công Đức Đã Tích<span id="cong-duc">0</span></div>
+        <div class="stat-item">Thời Gian Tu Tập<span id="timer">00:00</span></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="goMo()">Gõ Mõ Tích Đức</button>
+        <button class="btn-incense" onclick="thapHuong()">Thắp Hương</button>
+        <button class="btn-que" style="grid-column: span 2;" onclick="xinXam()">Xin Quẻ Đầu Ngày</button>
+    </div>
+
+    <div class="que-result" id="que-box">
+        <div class="que-title" id="que-ten">Quẻ Số 01: Đại Cát</div>
+        <div id="que-noi-dung">Mọi sự hanh thông, vạn điều bình an, gia đạo êm ấm.</div>
+    </div>
+
+    <!-- mâm âm thanh sử dụng tạm thời từ kho nhạc mở -->
+    <audio id="audio-bg" loop src="https://soundhelix.com"></audio> 
+    <audio id="audio-mo" src="https://mixkit.co"></audio>
+
+    <script>
+        let score = 0;
+        let secondsLive = 0;
+        let musicStarted = false;
+
+        setInterval(() => {
+            if (musicStarted) {
+                secondsLive++;
+                let min = String(Math.floor(secondsLive / 60)).padStart(2, '0');
+                let sec = String(secondsLive % 60).padStart(2, '0');
+                document.getElementById('timer').innerText = min + ":" + sec;
+            }
+        }, 1000);
+
+        function goMo() {
+            if (!musicStarted) {
+                let bgAudio = document.getElementById('audio-bg');
+                bgAudio.volume = 0.2;
+                bgAudio.play().catch(function(e) {});
+                musicStarted = true;
+            }
+
+            score++;
+            document.getElementById('cong-duc').innerText = score;
+
+            let buddha = document.getElementById('buddha');
+            buddha.style.transform = "scale(0.95)";
+            setTimeout(function() { buddha.style.transform = "scale(1)"; }, 100);
+
+            let moAudio = document.getElementById('audio-mo');
+            moAudio.currentTime = 0;
+            moAudio.volume = 1.0;
+            moAudio.play().catch(function(e) {});
+
+            createFloatingText("+1 Công Đức");
+        }
+
+        function createFloatingText(text) {
+            let altar = document.getElementById('altar-zone');
+            let el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            el.style.left = (Math.random() * 60 + 20) + '%';
+            el.style.top = '40%';
+            altar.appendChild(el);
+            setTimeout(function() { el.remove(); }, 800);
+        }
+
+        function thapHuong() {
+            let s1 = document.getElementById('stick1');
+            let s2 = document.getElementById('stick2');
+            let s3 = document.getElementById('stick3');
+
+            if (!s1.classList.contains('active')) {
+                s1.classList.add('active');
+                s2.classList.add('active');
+                s3.classList.add('active');
+                createFloatingText("Tâm Hương Thành Kính");
+                score += 10;
+                document.getElementById('cong-duc').innerText = score;
+            } else {
+                alert("Nhang đang cháy, tâm thành ý nguyện đã được chứng giám!");
+            }
+        }
+
+        const danhSachQue = [
+            { ten: "Quẻ Số 09: Thượng Thượng Cát", noiDung: "Cầu tài đắc tài, cầu lộc đắc lộc. Ngày mới tràn đầy năng lượng tích cực và may mắn." },
+            { ten: "Quẻ Số 18: Đại Cát Vạn Sự Thành", noiDung: "Công việc có quý nhân phù trợ, khó khăn tự khắc qua đi, tâm tình an yên vui vẻ." },
