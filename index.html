@@ -2,316 +2,393 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chùa Online - Viếng Chùa & Giải Quẻ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Chùa Online 3D-Style - Viếng Chùa & Giải Quẻ</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap');
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
+  * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: 'Noto Serif', serif;
-    background: linear-gradient(135deg, #1a0a00, #3d1c00, #5c2b00);
+    background: #0d0600;
     color: #f5e6c8;
-    min-height: 100vh;
     overflow-x: hidden;
+    min-height: 100vh;
   }
-
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
+  #loginScreen, #mapScreen, #sceneScreen {
+    display: none;
+    min-height: 100vh;
     padding: 20px;
-    text-align: center;
   }
-
-  h1 {
-    font-size: 2.2rem;
-    margin: 20px 0;
-    text-shadow: 0 0 15px #ffd700;
-    color: #ffecb3;
+  #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  h1 { font-size: 1.8rem; text-align: center; margin-bottom: 20px; text-shadow: 0 0 15px #ffd700; }
+  input, button {
+    font-family: inherit;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    border-radius: 30px;
+    border: none;
+    margin: 8px;
   }
-
-  .temple {
-    position: relative;
-    background: rgba(0,0,0,0.4);
-    border: 3px solid #c9a227;
-    border-radius: 20px;
-    padding: 30px 20px;
-    box-shadow: 0 0 40px rgba(201, 162, 39, 0.4);
-    margin-bottom: 30px;
-  }
-
-  .buddha {
-    width: 220px;
-    height: 220px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 5px solid #ffd700;
-    box-shadow: 0 0 30px #ffd700;
-    margin-bottom: 15px;
-    transition: transform 0.5s;
-  }
-
-  .buddha:hover {
-    transform: scale(1.05);
-  }
-
-  .incense {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    margin: 20px 0;
-  }
-
-  .incense-stick {
-    width: 8px;
-    height: 80px;
-    background: linear-gradient(to top, #8B4513, #D2691E);
-    position: relative;
-    border-radius: 4px;
-  }
-
-  .smoke {
-    position: absolute;
-    top: -40px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
-    height: 40px;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.3), transparent);
-    animation: smoke 3s infinite ease-in-out;
-    opacity: 0.6;
-  }
-
-  @keyframes smoke {
-    0% { transform: translateX(-50%) translateY(0) scale(1); opacity: 0.6; }
-    100% { transform: translateX(-50%) translateY(-60px) scale(1.5); opacity: 0; }
-  }
-
+  input { width: 260px; text-align: center; }
   .btn {
     background: linear-gradient(to bottom, #c9a227, #8B6914);
     color: #1a0a00;
-    border: none;
-    padding: 14px 32px;
-    font-size: 1.2rem;
     font-weight: bold;
-    border-radius: 50px;
     cursor: pointer;
-    margin: 10px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.4);
-    transition: all 0.3s;
-    font-family: 'Noto Serif', serif;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    transition: 0.3s;
   }
+  .btn:hover { transform: translateY(-3px); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(201, 162, 39, 0.5);
+  /* Bản đồ */
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    max-width: 700px;
+    margin: 20px auto;
   }
-
-  .btn:active {
-    transform: translateY(1px);
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .result-box {
-    background: rgba(0,0,0,0.6);
+  .location {
+    background: rgba(0,0,0,0.5);
     border: 2px solid #c9a227;
     border-radius: 15px;
+    padding: 20px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .location:hover { background: rgba(201,162,39,0.3); transform: scale(1.05); }
+  .location img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
+
+  /* Scene */
+  .scene {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(0,0,0,0.6);
+    border: 3px solid #c9a227;
+    border-radius: 20px;
     padding: 25px;
-    margin-top: 25px;
-    min-height: 180px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .buddha-img {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    border: 4px solid #ffd700;
+    box-shadow: 0 0 30px #ffd700;
+    margin: 15px auto;
+    object-fit: cover;
+  }
+  .incense-area {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 20px 0;
+    height: 120px;
+  }
+  .stick {
+    width: 6px;
+    height: 70px;
+    background: linear-gradient(#8B4513, #D2691E);
+    border-radius: 3px;
+    position: relative;
+  }
+  .smoke {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    width: 30px;
+    height: 50px;
+    background: radial-gradient(ellipse, rgba(255,255,255,0.4), transparent);
+    border-radius: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: none;
+  }
+  .smoke.active {
+    animation: smokeUp 2.5s infinite ease-out;
+  }
+  @keyframes smokeUp {
+    0% { transform: translateX(-50%) translateY(0) scale(0.6); opacity: 0.7; }
+    100% { transform: translateX(-50%) translateY(-80px) scale(1.8); opacity: 0; }
+  }
+  .result {
+    background: rgba(0,0,0,0.7);
+    border: 2px solid #c9a227;
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
     display: none;
     animation: fadeIn 0.8s;
   }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .que-number {
-    font-size: 2.5rem;
-    color: #ffd700;
-    margin-bottom: 10px;
-  }
-
-  .que-title {
-    font-size: 1.6rem;
-    color: #ffecb3;
-    margin-bottom: 15px;
-  }
-
-  .que-content {
-    font-size: 1.15rem;
-    line-height: 1.7;
-    text-align: left;
-    max-width: 600px;
-    margin: 0 auto;
-  }
-
-  .visitor-count {
-    margin-top: 20px;
-    font-size: 0.95rem;
-    opacity: 0.8;
-  }
-
-  .shaking {
-    animation: shake 0.5s infinite;
-  }
-
-  @keyframes shake {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-8deg); }
-    75% { transform: rotate(8deg); }
-  }
-
-  footer {
-    margin-top: 40px;
-    font-size: 0.9rem;
-    opacity: 0.7;
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+  .que-so { font-size: 2rem; color: #ffd700; }
+  .que-ten { font-size: 1.4rem; margin: 8px 0; }
+  .history { margin-top: 25px; font-size: 0.9rem; opacity: 0.8; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .music-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.4rem;
   }
 </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🙏 Chùa Online - Viếng Chùa & Giải Quẻ 🙏</h1>
 
-    <div class="temple">
-      <!-- Hình Phật (có thể thay link ảnh khác) -->
-      <img src="https://i.imgur.com/8QZQZQZ.png" 
-           alt="Đức Phật" 
-           class="buddha" 
-           id="buddhaImg"
-           onerror="this.src='https://cdn-icons-png.flaticon.com/512/2917/2917995.png'">
+<!-- Màn hình đăng nhập -->
+<div id="loginScreen">
+  <h1>🙏 Chùa Online</h1>
+  <p style="margin-bottom:15px">Nhập tên để tạo tài khoản (lưu trên máy bạn)</p>
+  <input type="text" id="username" placeholder="Tên của bạn..." maxlength="20">
+  <button class="btn" onclick="login()">Vào Chùa</button>
+</div>
 
-      <div class="incense">
-        <div class="incense-stick"><div class="smoke"></div></div>
-        <div class="incense-stick"><div class="smoke" style="animation-delay: 0.5s"></div></div>
-        <div class="incense-stick"><div class="smoke" style="animation-delay: 1s"></div></div>
-      </div>
-
-      <p style="margin: 15px 0; font-size: 1.1rem;">
-        Nam Mô A Di Đà Phật<br>
-        Hãy thành tâm cầu nguyện rồi bốc quẻ
-      </p>
-
-      <button class="btn" id="visitBtn" onclick="visitTemple()">🙏 Vào Viếng Chùa</button>
-      <button class="btn" id="drawBtn" onclick="drawQue()" disabled>🎋 Bốc Quẻ (72 Quẻ)</button>
+<!-- Bản đồ chọn nơi -->
+<div id="mapScreen">
+  <h1>Chọn nơi thắp hương cầu nguyện</h1>
+  <p id="welcome"></p>
+  <div class="map-grid">
+    <div class="location" onclick="goTo('chinhdien')">
+      <div style="font-size:2.5rem">🏛️</div>
+      <div>Chính Điện</div>
     </div>
-
-    <div class="result-box" id="resultBox">
-      <div class="que-number" id="queNumber"></div>
-      <div class="que-title" id="queTitle"></div>
-      <div class="que-content" id="queContent"></div>
+    <div class="location" onclick="goTo('vuon')">
+      <div style="font-size:2.5rem">🌳</div>
+      <div>Vườn Thiền</div>
     </div>
-
-    <div class="visitor-count" id="visitorCount">
-      Số người đã viếng chùa hôm nay: <strong>0</strong>
+    <div class="location" onclick="goTo('thap')">
+      <div style="font-size:2.5rem">🗼</div>
+      <div>Tháp Cổ</div>
     </div>
-
-    <footer>
-      Chùa Online • Thành tâm thì linh • 2025
-    </footer>
+    <div class="location" onclick="goTo('ao')">
+      <div style="font-size:2.5rem">🪷</div>
+      <div>Ao Sen</div>
+    </div>
+    <div class="location" onclick="goTo('quanam')">
+      <div style="font-size:2.5rem">🙏</div>
+      <div>Điện Quan Âm</div>
+    </div>
   </div>
+  <button class="btn" style="margin-top:20px" onclick="logout()">Đổi tài khoản</button>
+  <div class="history" id="historyBox"></div>
+</div>
+
+<!-- Scene thắp hương -->
+<div id="sceneScreen">
+  <div class="scene">
+    <h2 id="sceneTitle">Chính Điện</h2>
+    <img id="buddha" class="buddha-img" src="https://cdn-icons-png.flaticon.com/512/2917/2917995.png" alt="Phật">
+    <div class="incense-area" id="incenseArea">
+      <div class="stick"><div class="smoke" id="s1"></div></div>
+      <div class="stick"><div class="smoke" id="s2"></div></div>
+      <div class="stick"><div class="smoke" id="s3"></div></div>
+    </div>
+    <p id="statusText">Hãy thành tâm thắp hương</p>
+    <button class="btn" id="lightBtn" onclick="lightIncense()">🕯️ Thắp Hương</button>
+    <button class="btn" id="prayBtn" onclick="pray()" disabled>🙏 Cầu Nguyện</button>
+    <button class="btn" id="drawBtn" onclick="drawQue()" disabled>🎋 Bốc Quẻ</button>
+    <button class="btn" onclick="backToMap()">← Về Bản Đồ</button>
+
+    <div class="result" id="resultBox">
+      <div class="que-so" id="queSo"></div>
+      <div class="que-ten" id="queTen"></div>
+      <div id="queNoiDung"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Nút nhạc -->
+<button class="btn music-btn" id="musicBtn" onclick="toggleMusic()">🔇</button>
+
+<!-- Audio (thay link bằng file của bạn) -->
+<audio id="bgMusic" loop>
+  <source src="nhac-chua.mp3" type="audio/mpeg">
+  <!-- Nếu không có file, có thể dùng link online tạm -->
+</audio>
+<audio id="bellSound">
+  <source src="chuong.mp3" type="audio/mpeg">
+</audio>
 
 <script>
-  // 72 quẻ (rút gọn nội dung cho gọn, bạn có thể thay bằng nội dung đầy đủ)
-  const queList = [
-    { so: 1, ten: "Quẻ Đại Cát", noiDung: "Mọi sự hanh thông, công việc thuận lợi, tài lộc dồi dào. Hãy vững tin và hành động." },
-    { so: 2, ten: "Quẻ Trung Bình", noiDung: "Công việc bình thường, không quá tốt cũng không xấu. Cần kiên nhẫn và cẩn thận." },
-    { so: 3, ten: "Quẻ Tiểu Cát", noiDung: "Có niềm vui nhỏ, sức khỏe tốt. Nên giữ tâm thanh tịnh." },
-    { so: 4, ten: "Quẻ Hạnh Thông", noiDung: "Đường đi thuận lợi, quý nhân phù trợ. Nên bắt đầu công việc lớn." },
-    { so: 5, ten: "Quẻ Cẩn Thận", noiDung: "Cần thận trọng trong lời nói và hành động. Tránh quyết định vội vàng." },
-    { so: 6, ten: "Quẻ Đại Cát Đại Lợi", noiDung: "Rất tốt! Tài lộc, tình duyên, công danh đều thuận. Hãy tận dụng cơ hội." },
-    { so: 7, ten: "Quẻ Bình An", noiDung: "Gia đạo yên ổn, sức khỏe tốt. Giữ lòng từ bi sẽ được phù hộ." },
-    { so: 8, ten: "Quẻ Chờ Đợi", noiDung: "Chưa phải lúc hành động. Hãy kiên nhẫn chờ thời cơ." },
-    { so: 9, ten: "Quẻ May Mắn", noiDung: "Có tin vui bất ngờ. Tài vận khá tốt trong thời gian tới." },
-    { so: 10, ten: "Quẻ Cần Tu Tâm", noiDung: "Nên quay về với nội tâm, làm việc thiện nhiều hơn." },
-    // ... bạn có thể thêm đủ 72 quẻ ở đây
-    // Để demo, mình sẽ tạo ngẫu nhiên các quẻ còn lại
-  ];
+  // ===== Dữ liệu =====
+  const locations = {
+    chinhdien: { name: "Chính Điện", desc: "Nơi tôn nghiêm nhất của chùa" },
+    vuon: { name: "Vườn Thiền", desc: "Không gian thanh tịnh giữa thiên nhiên" },
+    thap: { name: "Tháp Cổ", desc: "Tháp xá lợi linh thiêng" },
+    ao: { name: "Ao Sen", desc: "Ao sen thanh khiết" },
+    quanam: { name: "Điện Quan Âm", desc: "Nơi cầu bình an, cứu khổ" }
+  };
 
-  // Tạo thêm các quẻ còn lại cho đủ 72 (demo)
-  const tenQue = ["Đại Cát", "Trung Cát", "Tiểu Cát", "Bình Hòa", "Cẩn Thận", "Hạnh Thông", "May Mắn", "Chờ Thời", "Tu Tâm", "Quý Nhân"];
+  // 72 quẻ (mẫu - bạn có thể thay nội dung thật)
+  const queList = [];
+  const tenMau = ["Đại Cát", "Trung Cát", "Tiểu Cát", "Bình An", "Cẩn Thận", "Hạnh Thông", "May Mắn", "Chờ Thời", "Tu Tâm", "Quý Nhân", "Tài Lộc", "Tình Duyên"];
   const noiDungMau = [
-    "Mọi sự đều tốt đẹp nếu giữ tâm thiện.",
-    "Công việc có tiến triển nhưng cần kiên trì.",
-    "Sức khỏe ổn định, gia đạo hòa thuận.",
-    "Nên tránh tranh chấp, lấy hòa làm quý.",
-    "Có quý nhân giúp đỡ, hãy nắm bắt cơ hội.",
+    "Mọi sự hanh thông, công việc thuận lợi. Hãy vững tin hành động.",
+    "Công việc bình thường. Cần kiên nhẫn và cẩn thận.",
+    "Có niềm vui nhỏ, sức khỏe tốt. Giữ tâm thanh tịnh.",
+    "Đường đi thuận lợi, quý nhân phù trợ.",
+    "Cần thận trọng lời nói và hành động.",
+    "Rất tốt! Tài lộc, tình duyên đều thuận.",
+    "Gia đạo yên ổn. Giữ lòng từ bi sẽ được phù hộ.",
+    "Chưa phải lúc hành động. Hãy kiên nhẫn chờ thời.",
+    "Có tin vui bất ngờ. Tài vận khá tốt.",
+    "Nên quay về nội tâm, làm việc thiện nhiều hơn.",
     "Tài lộc vừa phải, đừng tham lam.",
-    "Tình duyên đang có tín hiệu tốt.",
-    "Nên làm việc thiện để tích đức.",
-    "Cẩn thận lời nói kẻo sinh thị phi.",
-    "Mọi việc sẽ sáng tỏ sau một thời gian ngắn."
+    "Tình duyên đang có tín hiệu tốt."
   ];
-
-  for (let i = queList.length + 1; i <= 72; i++) {
+  for (let i = 1; i <= 72; i++) {
     queList.push({
       so: i,
-      ten: "Quẻ " + tenQue[Math.floor(Math.random() * tenQue.length)],
+      ten: "Quẻ " + tenMau[Math.floor(Math.random() * tenMau.length)],
       noiDung: noiDungMau[Math.floor(Math.random() * noiDungMau.length)]
     });
   }
 
-  let visited = false;
-  let visitor = parseInt(localStorage.getItem('chuaVisitor') || '0');
+  let currentUser = null;
+  let currentLoc = null;
+  let incenseLit = false;
+  let musicOn = false;
 
-  document.getElementById('visitorCount').innerHTML = 
-    `Số người đã viếng chùa hôm nay: <strong>${visitor}</strong>`;
-
-  function visitTemple() {
-    if (visited) return;
-    visited = true;
-    visitor++;
-    localStorage.setItem('chuaVisitor', visitor);
-    document.getElementById('visitorCount').innerHTML = 
-      `Số người đã viếng chùa hôm nay: <strong>${visitor}</strong>`;
-    
-    document.getElementById('visitBtn').disabled = true;
-    document.getElementById('visitBtn').textContent = "✅ Đã viếng chùa";
-    document.getElementById('drawBtn').disabled = false;
-
-    // Hiệu ứng
-    document.getElementById('buddhaImg').classList.add('shaking');
-    setTimeout(() => {
-      document.getElementById('buddhaImg').classList.remove('shaking');
-    }, 1500);
-
-    alert("Nam Mô A Di Đà Phật\nBạn đã thành tâm viếng chùa.\nHãy bốc quẻ khi sẵn sàng!");
+  // ===== Tài khoản =====
+  function login() {
+    const name = document.getElementById('username').value.trim();
+    if (!name) return alert("Vui lòng nhập tên!");
+    currentUser = name;
+    localStorage.setItem('chua_user', name);
+    if (!localStorage.getItem('chua_data_' + name)) {
+      localStorage.setItem('chua_data_' + name, JSON.stringify({ history: [] }));
+    }
+    showMap();
   }
 
+  function logout() {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mapScreen').style.display = 'none';
+    document.getElementById('sceneScreen').style.display = 'none';
+  }
+
+  function showMap() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('sceneScreen').style.display = 'none';
+    document.getElementById('mapScreen').style.display = 'block';
+    document.getElementById('welcome').textContent = `Chào ${currentUser}! Hãy chọn nơi muốn thắp hương.`;
+    updateHistory();
+  }
+
+  function updateHistory() {
+    const data = JSON.parse(localStorage.getItem('chua_data_' + currentUser) || '{"history":[]}');
+    const box = document.getElementById('historyBox');
+    if (data.history.length === 0) {
+      box.innerHTML = "<p>Chưa có lịch sử viếng chùa.</p>";
+      return;
+    }
+    box.innerHTML = "<strong>Lịch sử gần đây:</strong><ul>" + 
+      data.history.slice(-5).reverse().map(h => `<li>${h.time} - ${h.loc}: ${h.que}</li>`).join('') + "</ul>";
+  }
+
+  // ===== Chuyển scene =====
+  function goTo(loc) {
+    currentLoc = loc;
+    incenseLit = false;
+    document.getElementById('mapScreen').style.display = 'none';
+    document.getElementById('sceneScreen').style.display = 'block';
+    document.getElementById('sceneTitle').textContent = locations[loc].name;
+    document.getElementById('statusText').textContent = locations[loc].desc + " – Hãy thành tâm thắp hương";
+    document.getElementById('lightBtn').disabled = false;
+    document.getElementById('prayBtn').disabled = true;
+    document.getElementById('drawBtn').disabled = true;
+    document.getElementById('resultBox').style.display = 'none';
+    document.querySelectorAll('.smoke').forEach(s => s.classList.remove('active'));
+  }
+
+  function backToMap() {
+    showMap();
+  }
+
+  // ===== Thắp hương =====
+  function lightIncense() {
+    document.querySelectorAll('.smoke').forEach(s => s.classList.add('active'));
+    document.getElementById('lightBtn').disabled = true;
+    document.getElementById('statusText').textContent = "Hương đã được thắp... Hãy cầu nguyện";
+    document.getElementById('prayBtn').disabled = false;
+    playBell();
+    incenseLit = true;
+  }
+
+  function pray() {
+    document.getElementById('prayBtn').disabled = true;
+    document.getElementById('statusText').textContent = "Đã cầu nguyện thành tâm. Bây giờ hãy bốc quẻ";
+    document.getElementById('drawBtn').disabled = false;
+    playBell();
+  }
+
+  // ===== Bốc quẻ =====
   function drawQue() {
-    const btn = document.getElementById('drawBtn');
-    btn.disabled = true;
-    btn.textContent = "🎋 Đang gieo quẻ...";
-
-    // Hiệu ứng lắc
-    document.getElementById('buddhaImg').classList.add('shaking');
-
+    document.getElementById('drawBtn').disabled = true;
+    document.getElementById('statusText').textContent = "Đang gieo quẻ...";
+    document.getElementById('buddha').style.animation = "shake 0.4s infinite";
+    
     setTimeout(() => {
-      document.getElementById('buddhaImg').classList.remove('shaking');
-      
-      const randomQue = queList[Math.floor(Math.random() * queList.length)];
-      
-      document.getElementById('queNumber').textContent = `Quẻ số ${randomQue.so}`;
-      document.getElementById('queTitle').textContent = randomQue.ten;
-      document.getElementById('queContent').textContent = randomQue.noiDung;
-      
+      document.getElementById('buddha').style.animation = "";
+      const q = queList[Math.floor(Math.random() * 72)];
+      document.getElementById('queSo').textContent = `Quẻ số ${q.so}`;
+      document.getElementById('queTen').textContent = q.ten;
+      document.getElementById('queNoiDung').textContent = q.noiDung;
       document.getElementById('resultBox').style.display = 'block';
-      
-      btn.textContent = "🎋 Bốc Quẻ Lại";
-      btn.disabled = false;
+      document.getElementById('statusText').textContent = "Nam Mô A Di Đà Phật";
+
+      // Lưu lịch sử
+      const data = JSON.parse(localStorage.getItem('chua_data_' + currentUser));
+      data.history.push({
+        time: new Date().toLocaleString('vi-VN'),
+        loc: locations[currentLoc].name,
+        que: `Quẻ ${q.so} - ${q.ten}`
+      });
+      localStorage.setItem('chua_data_' + currentUser, JSON.stringify(data));
+      playBell();
     }, 1800);
   }
+
+  // ===== Nhạc =====
+  function toggleMusic() {
+    const bg = document.getElementById('bgMusic');
+    if (musicOn) {
+      bg.pause();
+      document.getElementById('musicBtn').textContent = "🔇";
+    } else {
+      bg.play().catch(()=>{});
+      document.getElementById('musicBtn').textContent = "🔊";
+    }
+    musicOn = !musicOn;
+  }
+
+  function playBell() {
+    const bell = document.getElementById('bellSound');
+    bell.currentTime = 0;
+    bell.play().catch(()=>{});
+  }
+
+  // Tự đăng nhập nếu đã có
+  window.onload = () => {
+    const saved = localStorage.getItem('chua_user');
+    if (saved) {
+      currentUser = saved;
+      showMap();
+    }
+  };
+
+  // CSS shake
+  const style = document.createElement('style');
+  style.innerHTML = `@keyframes shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }`;
+  document.head.appendChild(style);
 </script>
 </body>
 </html>
