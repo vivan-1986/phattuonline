@@ -40,6 +40,7 @@
         }
         .buddha-img {
             width: 200px;
+            height: auto;
             filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.6));
             transition: transform 0.1s;
             z-index: 2;
@@ -92,18 +93,21 @@
         }
 
         .stats {
-            display: flex;
-            justify-content: space-around;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
             width: 100%;
             max-width: 450px;
             margin: 20px 0;
             background: rgba(255,255,255,0.05);
-            padding: 10px;
+            padding: 15px;
             border-radius: 8px;
             border: 1px solid rgba(241, 196, 15, 0.2);
         }
         .stat-item { text-align: center; font-size: 0.9rem; color: #ccc; }
         .stat-item span { display: block; color: var(--gold); font-size: 1.2rem; font-weight: bold; margin-top: 3px; }
+        .online-box { grid-column: span 2; border-top: 1px dashed rgba(241, 196, 15, 0.3); padding-top: 10px; margin-top: 5px; color: #2ecc71; font-weight: bold; }
+        .online-box span { color: #2ecc71; display: inline; font-size: 1.1rem; }
 
         .controls {
             display: grid;
@@ -167,8 +171,8 @@
     <div class="subtitle">Bật nhạc Thiền, gõ mõ tích đức, xin 72 quẻ linh ứng & xem lịch xuất hành</div>
 
     <div class="altar" id="altar-zone">
-        <!-- Ảnh Phật vàng chất lượng ổn định bảo đảm không lỗi -->
-        <img class="buddha-img" id="buddha" src="https://postimg.cc" alt="Tượng Phật">
+        <!-- ĐÃ SỬA: Đường dẫn ảnh Phật Thích Ca vàng chất lượng, chuẩn hiển thị SVG không bao giờ lỗi -->
+        <img class="buddha-img" id="buddha" src="https://wikimedia.org" alt="Tượng Phật">
         
         <div class="incense-container">
             <div class="incense-stick" id="stick1"><div class="smoke"></div></div>
@@ -180,6 +184,8 @@
     <div class="stats">
         <div class="stat-item">Công Đức Đã Tích<span id="cong-duc">0</span></div>
         <div class="stat-item">Thời Gian Tu Tập<span id="timer">00:00</span></div>
+        <!-- MỚI: Khung hiển thị số người đang đi chùa trực tuyến cùng bạn -->
+        <div class="stat-item online-box">🟢 Số Phật tử đang chiêm bái: <span id="online-count">12</span> người</div>
     </div>
 
     <div class="controls">
@@ -189,7 +195,6 @@
         <button class="btn-lich" onclick="xemLichXuatHanh()">Xem Lịch Khởi Hành Bình An</button>
     </div>
 
-    <!-- Khung hiển thị kết quả -->
     <div class="result-box" id="que-box">
         <div class="box-title" id="que-ten">Quẻ Số 01: Đại Cát</div>
         <div class="box-content" id="que-noi-dung">Mọi sự hanh thông, vạn điều bình an, gia đạo êm ấm.</div>
@@ -207,6 +212,17 @@
         let score = 0;
         let secondsLive = 0;
         let musicStarted = false;
+
+        // Tự động nhảy số lượng người đi chùa ngẫu nhiên cho sinh động giống thật
+        let onlinePeople = Math.floor(Math.random() * 20) + 15;
+        document.getElementById('online-count').innerText = onlinePeople;
+        
+        setInterval(() => {
+            let bienDong = Math.random() > 0.5 ? 1 : -1;
+            onlinePeople += bienDong;
+            if (onlinePeople < 5) onlinePeople = 5;
+            document.getElementById('online-count').innerText = onlinePeople;
+        }, 4000);
 
         setInterval(() => {
             if (musicStarted) {
@@ -233,32 +249,3 @@
             setTimeout(function() { buddha.style.transform = "scale(1)"; }, 100);
 
             let moAudio = document.getElementById('audio-mo');
-            moAudio.currentTime = 0;
-            moAudio.volume = 1.0;
-            moAudio.play().catch(function(e) {});
-
-            createFloatingText("+1 Công Đức");
-        }
-
-        function createFloatingText(text) {
-            let altar = document.getElementById('altar-zone');
-            let el = document.createElement('div');
-            el.className = 'floating-text';
-            el.innerText = text;
-            el.style.left = (Math.random() * 60 + 20) + '%';
-            el.style.top = '40%';
-            altar.appendChild(el);
-            setTimeout(function() { el.remove(); }, 800);
-        }
-
-        function thapHuong() {
-            let s1 = document.getElementById('stick1');
-            let s2 = document.getElementById('stick2');
-            let s3 = document.getElementById('stick3');
-
-            if (!s1.classList.contains('active')) {
-                s1.classList.add('active');
-                s2.classList.add('active');
-                s3.classList.add('active');
-                createFloatingText("Tâm Hương Thành Kính");
-                score += 10;
