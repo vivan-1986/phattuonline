@@ -2,393 +2,629 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Chùa Online 3D-Style - Viếng Chùa & Giải Quẻ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Chùa Online 3D</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap');
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Noto Serif', serif;
-    background: #0d0600;
-    color: #f5e6c8;
-    overflow-x: hidden;
-    min-height: 100vh;
+  body { overflow: hidden; font-family: 'Noto Serif', serif; background: #000; color: #f5e6c8; }
+  #canvas { display: block; width: 100vw; height: 100vh; }
+  
+  #ui {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 10;
   }
-  #loginScreen, #mapScreen, #sceneScreen {
-    display: none;
-    min-height: 100vh;
-    padding: 20px;
+  #ui * { pointer-events: auto; }
+  
+  .panel {
+    position: absolute; background: rgba(0,0,0,0.75);
+    border: 2px solid #c9a227; border-radius: 16px;
+    padding: 18px; backdrop-filter: blur(8px);
   }
-  #loginScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-  h1 { font-size: 1.8rem; text-align: center; margin-bottom: 20px; text-shadow: 0 0 15px #ffd700; }
-  input, button {
-    font-family: inherit;
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    border-radius: 30px;
-    border: none;
-    margin: 8px;
+  
+  #loginPanel {
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    text-align: center; width: 320px;
   }
-  input { width: 260px; text-align: center; }
+  #loginPanel h1 { font-size: 1.6rem; margin-bottom: 12px; text-shadow: 0 0 12px #ffd700; }
+  #loginPanel input {
+    width: 100%; padding: 12px; margin: 10px 0; border-radius: 30px;
+    border: none; font-size: 1.1rem; text-align: center; font-family: inherit;
+  }
+  
   .btn {
-    background: linear-gradient(to bottom, #c9a227, #8B6914);
-    color: #1a0a00;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    transition: 0.3s;
+    background: linear-gradient(#c9a227, #8B6914);
+    color: #1a0a00; border: none; padding: 11px 22px;
+    border-radius: 30px; font-weight: bold; cursor: pointer;
+    font-family: inherit; font-size: 1rem; margin: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
   }
-  .btn:hover { transform: translateY(-3px); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* Bản đồ */
-  .map-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 15px;
-    max-width: 700px;
-    margin: 20px auto;
+  .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  
+  #hud {
+    top: 15px; left: 15px; display: none;
   }
-  .location {
-    background: rgba(0,0,0,0.5);
-    border: 2px solid #c9a227;
-    border-radius: 15px;
-    padding: 20px 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: 0.3s;
+  #actionPanel {
+    bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: none; text-align: center; min-width: 280px;
   }
-  .location:hover { background: rgba(201,162,39,0.3); transform: scale(1.05); }
-  .location img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 8px; }
-
-  /* Scene */
-  .scene {
-    max-width: 800px;
-    margin: 0 auto;
-    background: rgba(0,0,0,0.6);
-    border: 3px solid #c9a227;
-    border-radius: 20px;
-    padding: 25px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+  #resultPanel {
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+    display: none; max-width: 380px; text-align: center;
   }
-  .buddha-img {
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    border: 4px solid #ffd700;
-    box-shadow: 0 0 30px #ffd700;
-    margin: 15px auto;
-    object-fit: cover;
+  #resultPanel .que-so { font-size: 2rem; color: #ffd700; }
+  #resultPanel .que-ten { font-size: 1.3rem; margin: 8px 0; }
+  
+  #musicBtn {
+    position: absolute; bottom: 20px; right: 20px;
+    width: 48px; height: 48px; border-radius: 50%;
+    font-size: 1.3rem; display: none;
   }
-  .incense-area {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    margin: 20px 0;
-    height: 120px;
-  }
-  .stick {
-    width: 6px;
-    height: 70px;
-    background: linear-gradient(#8B4513, #D2691E);
-    border-radius: 3px;
-    position: relative;
-  }
-  .smoke {
-    position: absolute;
-    bottom: 70px;
-    left: 50%;
-    width: 30px;
-    height: 50px;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.4), transparent);
-    border-radius: 50%;
-    transform: translateX(-50%);
-    opacity: 0;
-    animation: none;
-  }
-  .smoke.active {
-    animation: smokeUp 2.5s infinite ease-out;
-  }
-  @keyframes smokeUp {
-    0% { transform: translateX(-50%) translateY(0) scale(0.6); opacity: 0.7; }
-    100% { transform: translateX(-50%) translateY(-80px) scale(1.8); opacity: 0; }
-  }
-  .result {
-    background: rgba(0,0,0,0.7);
-    border: 2px solid #c9a227;
-    border-radius: 15px;
-    padding: 20px;
-    margin-top: 20px;
-    display: none;
-    animation: fadeIn 0.8s;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-  .que-so { font-size: 2rem; color: #ffd700; }
-  .que-ten { font-size: 1.4rem; margin: 8px 0; }
-  .history { margin-top: 25px; font-size: 0.9rem; opacity: 0.8; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto; }
-  .music-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 100;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 1.4rem;
+  #info {
+    position: absolute; bottom: 20px; left: 20px;
+    font-size: 0.85rem; opacity: 0.7; display: none;
   }
 </style>
 </head>
 <body>
+<canvas id="canvas"></canvas>
 
-<!-- Màn hình đăng nhập -->
-<div id="loginScreen">
-  <h1>🙏 Chùa Online</h1>
-  <p style="margin-bottom:15px">Nhập tên để tạo tài khoản (lưu trên máy bạn)</p>
-  <input type="text" id="username" placeholder="Tên của bạn..." maxlength="20">
-  <button class="btn" onclick="login()">Vào Chùa</button>
-</div>
-
-<!-- Bản đồ chọn nơi -->
-<div id="mapScreen">
-  <h1>Chọn nơi thắp hương cầu nguyện</h1>
-  <p id="welcome"></p>
-  <div class="map-grid">
-    <div class="location" onclick="goTo('chinhdien')">
-      <div style="font-size:2.5rem">🏛️</div>
-      <div>Chính Điện</div>
-    </div>
-    <div class="location" onclick="goTo('vuon')">
-      <div style="font-size:2.5rem">🌳</div>
-      <div>Vườn Thiền</div>
-    </div>
-    <div class="location" onclick="goTo('thap')">
-      <div style="font-size:2.5rem">🗼</div>
-      <div>Tháp Cổ</div>
-    </div>
-    <div class="location" onclick="goTo('ao')">
-      <div style="font-size:2.5rem">🪷</div>
-      <div>Ao Sen</div>
-    </div>
-    <div class="location" onclick="goTo('quanam')">
-      <div style="font-size:2.5rem">🙏</div>
-      <div>Điện Quan Âm</div>
-    </div>
+<div id="ui">
+  <!-- Login -->
+  <div class="panel" id="loginPanel">
+    <h1>🙏 Chùa Online 3D</h1>
+    <p>Nhập tên để vào chùa</p>
+    <input type="text" id="username" placeholder="Tên của bạn..." maxlength="20">
+    <br>
+    <button class="btn" onclick="login()">Vào Chùa</button>
   </div>
-  <button class="btn" style="margin-top:20px" onclick="logout()">Đổi tài khoản</button>
-  <div class="history" id="historyBox"></div>
-</div>
 
-<!-- Scene thắp hương -->
-<div id="sceneScreen">
-  <div class="scene">
-    <h2 id="sceneTitle">Chính Điện</h2>
-    <img id="buddha" class="buddha-img" src="https://cdn-icons-png.flaticon.com/512/2917/2917995.png" alt="Phật">
-    <div class="incense-area" id="incenseArea">
-      <div class="stick"><div class="smoke" id="s1"></div></div>
-      <div class="stick"><div class="smoke" id="s2"></div></div>
-      <div class="stick"><div class="smoke" id="s3"></div></div>
-    </div>
-    <p id="statusText">Hãy thành tâm thắp hương</p>
-    <button class="btn" id="lightBtn" onclick="lightIncense()">🕯️ Thắp Hương</button>
+  <!-- HUD -->
+  <div class="panel" id="hud">
+    <div id="userName"></div>
+    <div style="margin-top:6px;font-size:0.9rem" id="locName">Đang ở: Sân chùa</div>
+  </div>
+
+  <!-- Action -->
+  <div class="panel" id="actionPanel">
+    <div id="statusText" style="margin-bottom:10px">Chọn một địa điểm hoặc thắp hương</div>
+    <button class="btn" id="lightBtn" onclick="lightIncense()" disabled>🕯️ Thắp Hương</button>
     <button class="btn" id="prayBtn" onclick="pray()" disabled>🙏 Cầu Nguyện</button>
     <button class="btn" id="drawBtn" onclick="drawQue()" disabled>🎋 Bốc Quẻ</button>
-    <button class="btn" onclick="backToMap()">← Về Bản Đồ</button>
-
-    <div class="result" id="resultBox">
-      <div class="que-so" id="queSo"></div>
-      <div class="que-ten" id="queTen"></div>
-      <div id="queNoiDung"></div>
-    </div>
+    <br>
+    <button class="btn" onclick="goHome()">🏠 Về Sân</button>
   </div>
+
+  <!-- Kết quả quẻ -->
+  <div class="panel" id="resultPanel">
+    <div class="que-so" id="queSo"></div>
+    <div class="que-ten" id="queTen"></div>
+    <div id="queNoiDung" style="margin:12px 0;line-height:1.5"></div>
+    <button class="btn" onclick="closeResult()">Đóng</button>
+  </div>
+
+  <button class="btn" id="musicBtn" onclick="toggleMusic()">🔇</button>
+  <div id="info">Kéo chuột / chạm để xoay • Lăn để zoom</div>
 </div>
 
-<!-- Nút nhạc -->
-<button class="btn music-btn" id="musicBtn" onclick="toggleMusic()">🔇</button>
-
-<!-- Audio (thay link bằng file của bạn) -->
 <audio id="bgMusic" loop>
   <source src="nhac-chua.mp3" type="audio/mpeg">
-  <!-- Nếu không có file, có thể dùng link online tạm -->
 </audio>
 <audio id="bellSound">
   <source src="chuong.mp3" type="audio/mpeg">
 </audio>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
-  // ===== Dữ liệu =====
-  const locations = {
-    chinhdien: { name: "Chính Điện", desc: "Nơi tôn nghiêm nhất của chùa" },
-    vuon: { name: "Vườn Thiền", desc: "Không gian thanh tịnh giữa thiên nhiên" },
-    thap: { name: "Tháp Cổ", desc: "Tháp xá lợi linh thiêng" },
-    ao: { name: "Ao Sen", desc: "Ao sen thanh khiết" },
-    quanam: { name: "Điện Quan Âm", desc: "Nơi cầu bình an, cứu khổ" }
-  };
+// ===================== DỮ LIỆU =====================
+const locations = {
+  home: { name: "Sân chùa", pos: new THREE.Vector3(0, 8, 28), look: new THREE.Vector3(0, 5, 0) },
+  chinhdien: { name: "Chính Điện", pos: new THREE.Vector3(0, 6, 12), look: new THREE.Vector3(0, 4, 0) },
+  vuon: { name: "Vườn Thiền", pos: new THREE.Vector3(-18, 6, 8), look: new THREE.Vector3(-18, 3, 0) },
+  thap: { name: "Tháp Cổ", pos: new THREE.Vector3(18, 8, 10), look: new THREE.Vector3(18, 10, 0) },
+  ao: { name: "Ao Sen", pos: new THREE.Vector3(0, 5, -18), look: new THREE.Vector3(0, 2, -25) },
+  quanam: { name: "Điện Quan Âm", pos: new THREE.Vector3(-12, 6, -12), look: new THREE.Vector3(-12, 4, -18) }
+};
 
-  // 72 quẻ (mẫu - bạn có thể thay nội dung thật)
-  const queList = [];
-  const tenMau = ["Đại Cát", "Trung Cát", "Tiểu Cát", "Bình An", "Cẩn Thận", "Hạnh Thông", "May Mắn", "Chờ Thời", "Tu Tâm", "Quý Nhân", "Tài Lộc", "Tình Duyên"];
-  const noiDungMau = [
-    "Mọi sự hanh thông, công việc thuận lợi. Hãy vững tin hành động.",
-    "Công việc bình thường. Cần kiên nhẫn và cẩn thận.",
-    "Có niềm vui nhỏ, sức khỏe tốt. Giữ tâm thanh tịnh.",
-    "Đường đi thuận lợi, quý nhân phù trợ.",
-    "Cần thận trọng lời nói và hành động.",
-    "Rất tốt! Tài lộc, tình duyên đều thuận.",
-    "Gia đạo yên ổn. Giữ lòng từ bi sẽ được phù hộ.",
-    "Chưa phải lúc hành động. Hãy kiên nhẫn chờ thời.",
-    "Có tin vui bất ngờ. Tài vận khá tốt.",
-    "Nên quay về nội tâm, làm việc thiện nhiều hơn.",
-    "Tài lộc vừa phải, đừng tham lam.",
-    "Tình duyên đang có tín hiệu tốt."
+const queList = [];
+const tenMau = ["Đại Cát","Trung Cát","Tiểu Cát","Bình An","Cẩn Thận","Hạnh Thông","May Mắn","Chờ Thời","Tu Tâm","Quý Nhân","Tài Lộc","Tình Duyên"];
+const noiDungMau = [
+  "Mọi sự hanh thông, công việc thuận lợi. Hãy vững tin hành động.",
+  "Công việc bình thường. Cần kiên nhẫn và cẩn thận.",
+  "Có niềm vui nhỏ, sức khỏe tốt. Giữ tâm thanh tịnh.",
+  "Đường đi thuận lợi, quý nhân phù trợ.",
+  "Cần thận trọng lời nói và hành động.",
+  "Rất tốt! Tài lộc, tình duyên đều thuận.",
+  "Gia đạo yên ổn. Giữ lòng từ bi sẽ được phù hộ.",
+  "Chưa phải lúc hành động. Hãy kiên nhẫn chờ thời.",
+  "Có tin vui bất ngờ. Tài vận khá tốt.",
+  "Nên quay về nội tâm, làm việc thiện nhiều hơn.",
+  "Tài lộc vừa phải, đừng tham lam.",
+  "Tình duyên đang có tín hiệu tốt."
+];
+for (let i = 1; i <= 72; i++) {
+  queList.push({
+    so: i,
+    ten: "Quẻ " + tenMau[i % tenMau.length],
+    noiDung: noiDungMau[i % noiDungMau.length]
+  });
+}
+
+// ===================== BIẾN TOÀN CỤC =====================
+let scene, camera, renderer, controls;
+let currentUser = null;
+let currentLoc = "home";
+let incenseLit = false;
+let musicOn = false;
+let incenseParticles = [];
+let hotspots = [];
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2();
+let clock = new THREE.Clock();
+
+// ===================== KHỞI TẠO 3D =====================
+function init3D() {
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0a0500);
+  scene.fog = new THREE.FogExp2(0x1a0a00, 0.018);
+
+  camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
+  camera.position.copy(locations.home.pos);
+
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas'), antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 5;
+  controls.maxDistance = 50;
+  controls.maxPolarAngle = Math.PI / 2.1;
+  controls.target.copy(locations.home.look);
+
+  // Ánh sáng
+  const ambient = new THREE.AmbientLight(0xffe0a0, 0.4);
+  scene.add(ambient);
+
+  const dir = new THREE.DirectionalLight(0xfff0d0, 0.9);
+  dir.position.set(20, 40, 20);
+  dir.castShadow = true;
+  dir.shadow.mapSize.set(1024, 1024);
+  scene.add(dir);
+
+  const point1 = new THREE.PointLight(0xffaa33, 1.2, 30);
+  point1.position.set(0, 8, 5);
+  scene.add(point1);
+
+  // Đất
+  const groundGeo = new THREE.PlaneGeometry(80, 80);
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.9 });
+  const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // ===== XÂY DỰNG CHÙA =====
+  buildTemple();
+  buildGarden();
+  buildPagoda();
+  buildPond();
+  buildQuanAm();
+  createHotspots();
+
+  // Particle khói hương (tạo sẵn)
+  createIncenseSystem();
+
+  window.addEventListener('resize', onResize);
+  renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
+  animate();
+}
+
+function buildTemple() {
+  // Nền chính điện
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(14, 1.5, 12),
+    new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
+  );
+  base.position.set(0, 0.75, 0);
+  base.castShadow = true;
+  scene.add(base);
+
+  // Tường
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(12, 6, 10), wallMat);
+  wall.position.set(0, 4.5, 0);
+  wall.castShadow = true;
+  scene.add(wall);
+
+  // Mái
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x8B0000 });
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(10, 4, 4), roofMat);
+  roof.position.set(0, 9.5, 0);
+  roof.rotation.y = Math.PI / 4;
+  roof.castShadow = true;
+  scene.add(roof);
+
+  // Cột
+  for (let x of [-5, 5]) {
+    const col = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.4, 0.5, 6, 8),
+      new THREE.MeshStandardMaterial({ color: 0x4a2c0b })
+    );
+    col.position.set(x, 4.5, 5.5);
+    col.castShadow = true;
+    scene.add(col);
+  }
+
+  // Tượng Phật đơn giản
+  const buddhaGroup = new THREE.Group();
+  const body = new THREE.Mesh(
+    new THREE.SphereGeometry(1.2, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.6, roughness: 0.3 })
+  );
+  body.position.y = 1.5;
+  buddhaGroup.add(body);
+
+  const head = new THREE.Mesh(
+    new THREE.SphereGeometry(0.7, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xffe066 })
+  );
+  head.position.y = 3.1;
+  buddhaGroup.add(head);
+
+  buddhaGroup.position.set(0, 2.5, -2);
+  scene.add(buddhaGroup);
+
+  // Bàn thờ / chỗ thắp hương
+  const altar = new THREE.Mesh(
+    new THREE.BoxGeometry(4, 0.8, 1.5),
+    new THREE.MeshStandardMaterial({ color: 0x3d1c00 })
+  );
+  altar.position.set(0, 1.9, 3);
+  scene.add(altar);
+}
+
+function buildGarden() {
+  // Cây
+  for (let i = 0; i < 8; i++) {
+    const tree = new THREE.Group();
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.3, 0.4, 3, 6),
+      new THREE.MeshStandardMaterial({ color: 0x4a3728 })
+    );
+    trunk.position.y = 1.5;
+    tree.add(trunk);
+    const leaves = new THREE.Mesh(
+      new THREE.SphereGeometry(1.8, 8, 8),
+      new THREE.MeshStandardMaterial({ color: 0x2d5a27 })
+    );
+    leaves.position.y = 3.8;
+    tree.add(leaves);
+    tree.position.set(-18 + (i % 4) * 3, 0, -5 + Math.floor(i / 4) * 6);
+    scene.add(tree);
+  }
+}
+
+function buildPagoda() {
+  const pagoda = new THREE.Group();
+  const colors = [0x8B0000, 0x5c0000, 0x8B0000];
+  for (let i = 0; i < 5; i++) {
+    const size = 4 - i * 0.5;
+    const level = new THREE.Mesh(
+      new THREE.BoxGeometry(size, 1.8, size),
+      new THREE.MeshStandardMaterial({ color: colors[i % 3] })
+    );
+    level.position.y = 1 + i * 2.2;
+    pagoda.add(level);
+
+    const roof = new THREE.Mesh(
+      new THREE.ConeGeometry(size * 0.9, 1.2, 4),
+      new THREE.MeshStandardMaterial({ color: 0x4a0000 })
+    );
+    roof.position.y = 2.1 + i * 2.2;
+    roof.rotation.y = Math.PI / 4;
+    pagoda.add(roof);
+  }
+  pagoda.position.set(18, 0, 0);
+  scene.add(pagoda);
+}
+
+function buildPond() {
+  const water = new THREE.Mesh(
+    new THREE.CircleGeometry(8, 32),
+    new THREE.MeshStandardMaterial({ color: 0x1a4a5c, transparent: true, opacity: 0.7, roughness: 0.1 })
+  );
+  water.rotation.x = -Math.PI / 2;
+  water.position.set(0, 0.05, -25);
+  scene.add(water);
+
+  // Sen
+  for (let i = 0; i < 6; i++) {
+    const lotus = new THREE.Mesh(
+      new THREE.SphereGeometry(0.4, 8, 8),
+      new THREE.MeshStandardMaterial({ color: 0xff69b4 })
+    );
+    const angle = (i / 6) * Math.PI * 2;
+    lotus.position.set(Math.cos(angle) * 3, 0.3, -25 + Math.sin(angle) * 3);
+    scene.add(lotus);
+  }
+}
+
+function buildQuanAm() {
+  const base = new THREE.Mesh(
+    new THREE.BoxGeometry(8, 1, 6),
+    new THREE.MeshStandardMaterial({ color: 0x5c3a21 })
+  );
+  base.position.set(-12, 0.5, -18);
+  scene.add(base);
+
+  const hall = new THREE.Mesh(
+    new THREE.BoxGeometry(6, 5, 5),
+    new THREE.MeshStandardMaterial({ color: 0x6b4423 })
+  );
+  hall.position.set(-12, 3.5, -18);
+  scene.add(hall);
+
+  const roof = new THREE.Mesh(
+    new THREE.ConeGeometry(5, 3, 4),
+    new THREE.MeshStandardMaterial({ color: 0x8B0000 })
+  );
+  roof.position.set(-12, 7.5, -18);
+  roof.rotation.y = Math.PI / 4;
+  scene.add(roof);
+}
+
+function createHotspots() {
+  const positions = [
+    { name: "chinhdien", pos: [0, 2, 5] },
+    { name: "vuon", pos: [-18, 2, 2] },
+    { name: "thap", pos: [18, 2, 5] },
+    { name: "ao", pos: [0, 2, -18] },
+    { name: "quanam", pos: [-12, 2, -14] }
   ];
-  for (let i = 1; i <= 72; i++) {
-    queList.push({
-      so: i,
-      ten: "Quẻ " + tenMau[Math.floor(Math.random() * tenMau.length)],
-      noiDung: noiDungMau[Math.floor(Math.random() * noiDungMau.length)]
+
+  positions.forEach(p => {
+    const geo = new THREE.SphereGeometry(0.6, 12, 12);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true, opacity: 0.7 });
+    const sphere = new THREE.Mesh(geo, mat);
+    sphere.position.set(...p.pos);
+    sphere.userData = { type: "hotspot", loc: p.name };
+    scene.add(sphere);
+    hotspots.push(sphere);
+
+    // Ánh sáng nhỏ
+    const light = new THREE.PointLight(0xffd700, 0.6, 5);
+    light.position.copy(sphere.position);
+    scene.add(light);
+  });
+}
+
+function createIncenseSystem() {
+  // 3 que hương tại chính điện
+  for (let i = -1; i <= 1; i++) {
+    const stick = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.05, 0.05, 1.2, 6),
+      new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+    );
+    stick.position.set(i * 0.4, 2.8, 3.2);
+    scene.add(stick);
+  }
+}
+
+// Particle khói
+function addSmoke() {
+  const particleCount = 80;
+  const geometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const velocities = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 0.8;
+    positions[i * 3 + 1] = Math.random() * 0.5;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+    velocities.push({
+      x: (Math.random() - 0.5) * 0.01,
+      y: 0.02 + Math.random() * 0.02,
+      z: (Math.random() - 0.5) * 0.01
     });
   }
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-  let currentUser = null;
-  let currentLoc = null;
-  let incenseLit = false;
-  let musicOn = false;
+  const material = new THREE.PointsMaterial({
+    color: 0xcccccc,
+    size: 0.25,
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false
+  });
 
-  // ===== Tài khoản =====
-  function login() {
-    const name = document.getElementById('username').value.trim();
-    if (!name) return alert("Vui lòng nhập tên!");
-    currentUser = name;
-    localStorage.setItem('chua_user', name);
-    if (!localStorage.getItem('chua_data_' + name)) {
-      localStorage.setItem('chua_data_' + name, JSON.stringify({ history: [] }));
+  const particles = new THREE.Points(geometry, material);
+  particles.position.set(0, 3.5, 3.2);
+  particles.userData = { velocities, life: 0 };
+  scene.add(particles);
+  incenseParticles.push(particles);
+}
+
+// ===================== TƯƠNG TÁC =====================
+function onPointerDown(event) {
+  if (!currentUser) return;
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(hotspots);
+  if (intersects.length > 0) {
+    const loc = intersects[0].object.userData.loc;
+    goTo(loc);
+  }
+}
+
+function goTo(loc) {
+  currentLoc = loc;
+  incenseLit = false;
+  document.getElementById('locName').textContent = "Đang ở: " + locations[loc].name;
+  document.getElementById('statusText').textContent = "Hãy thắp hương tại đây";
+  document.getElementById('lightBtn').disabled = false;
+  document.getElementById('prayBtn').disabled = true;
+  document.getElementById('drawBtn').disabled = true;
+
+  // Di chuyển camera mượt
+  const targetPos = locations[loc].pos;
+  const targetLook = locations[loc].look;
+  animateCamera(targetPos, targetLook);
+}
+
+function goHome() {
+  goTo("home");
+  document.getElementById('statusText').textContent = "Chọn điểm vàng để đến các khu vực";
+  document.getElementById('lightBtn').disabled = true;
+}
+
+function animateCamera(pos, look) {
+  const startPos = camera.position.clone();
+  const startLook = controls.target.clone();
+  let t = 0;
+  function step() {
+    t += 0.03;
+    if (t > 1) t = 1;
+    camera.position.lerpVectors(startPos, pos, t);
+    controls.target.lerpVectors(startLook, look, t);
+    if (t < 1) requestAnimationFrame(step);
+  }
+  step();
+}
+
+function lightIncense() {
+  if (incenseLit) return;
+  incenseLit = true;
+  addSmoke();
+  document.getElementById('lightBtn').disabled = true;
+  document.getElementById('prayBtn').disabled = false;
+  document.getElementById('statusText').textContent = "Hương đã thắp. Hãy cầu nguyện";
+  playBell();
+}
+
+function pray() {
+  document.getElementById('prayBtn').disabled = true;
+  document.getElementById('drawBtn').disabled = false;
+  document.getElementById('statusText').textContent = "Đã cầu nguyện. Bốc quẻ đi nào";
+  playBell();
+}
+
+function drawQue() {
+  document.getElementById('drawBtn').disabled = true;
+  document.getElementById('statusText').textContent = "Đang gieo quẻ...";
+  playBell();
+
+  setTimeout(() => {
+    const q = queList[Math.floor(Math.random() * 72)];
+    document.getElementById('queSo').textContent = "Quẻ số " + q.so;
+    document.getElementById('queTen').textContent = q.ten;
+    document.getElementById('queNoiDung').textContent = q.noiDung;
+    document.getElementById('resultPanel').style.display = "block";
+
+    // Lưu lịch sử
+    const key = "chua3d_" + currentUser;
+    const data = JSON.parse(localStorage.getItem(key) || '{"history":[]}');
+    data.history.push({
+      time: new Date().toLocaleString("vi-VN"),
+      loc: locations[currentLoc].name,
+      que: `Quẻ ${q.so}`
+    });
+    localStorage.setItem(key, JSON.stringify(data));
+  }, 1500);
+}
+
+function closeResult() {
+  document.getElementById('resultPanel').style.display = "none";
+  document.getElementById('statusText').textContent = "Nam Mô A Di Đà Phật";
+}
+
+// ===================== TÀI KHOẢN & NHẠC =====================
+function login() {
+  const name = document.getElementById("username").value.trim();
+  if (!name) return alert("Nhập tên đi bạn!");
+  currentUser = name;
+  localStorage.setItem("chua3d_user", name);
+
+  document.getElementById("loginPanel").style.display = "none";
+  document.getElementById("hud").style.display = "block";
+  document.getElementById("actionPanel").style.display = "block";
+  document.getElementById("musicBtn").style.display = "block";
+  document.getElementById("info").style.display = "block";
+  document.getElementById("userName").textContent = "Xin chào, " + name;
+
+  init3D();
+}
+
+function toggleMusic() {
+  const bg = document.getElementById("bgMusic");
+  if (musicOn) {
+    bg.pause();
+    document.getElementById("musicBtn").textContent = "🔇";
+  } else {
+    bg.play().catch(() => {});
+    document.getElementById("musicBtn").textContent = "🔊";
+  }
+  musicOn = !musicOn;
+}
+
+function playBell() {
+  const bell = document.getElementById("bellSound");
+  bell.currentTime = 0;
+  bell.play().catch(() => {});
+}
+
+// ===================== ANIMATION =====================
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+
+  controls.update();
+
+  // Cập nhật khói
+  incenseParticles.forEach(p => {
+    const pos = p.geometry.attributes.position.array;
+    const vels = p.userData.velocities;
+    for (let i = 0; i < vels.length; i++) {
+      pos[i * 3] += vels[i].x;
+      pos[i * 3 + 1] += vels[i].y;
+      pos[i * 3 + 2] += vels[i].z;
+      if (pos[i * 3 + 1] > 4) {
+        pos[i * 3 + 1] = 0;
+        pos[i * 3] = (Math.random() - 0.5) * 0.8;
+      }
     }
-    showMap();
+    p.geometry.attributes.position.needsUpdate = true;
+    p.material.opacity = 0.4 + Math.sin(Date.now() * 0.002) * 0.15;
+  });
+
+  // Nhấp nháy hotspot
+  hotspots.forEach((h, i) => {
+    h.material.opacity = 0.5 + Math.sin(Date.now() * 0.003 + i) * 0.3;
+  });
+
+  renderer.render(scene, camera);
+}
+
+function onResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// Tự login nếu đã có
+window.onload = () => {
+  const saved = localStorage.getItem("chua3d_user");
+  if (saved) {
+    document.getElementById("username").value = saved;
   }
-
-  function logout() {
-    currentUser = null;
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('mapScreen').style.display = 'none';
-    document.getElementById('sceneScreen').style.display = 'none';
-  }
-
-  function showMap() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('sceneScreen').style.display = 'none';
-    document.getElementById('mapScreen').style.display = 'block';
-    document.getElementById('welcome').textContent = `Chào ${currentUser}! Hãy chọn nơi muốn thắp hương.`;
-    updateHistory();
-  }
-
-  function updateHistory() {
-    const data = JSON.parse(localStorage.getItem('chua_data_' + currentUser) || '{"history":[]}');
-    const box = document.getElementById('historyBox');
-    if (data.history.length === 0) {
-      box.innerHTML = "<p>Chưa có lịch sử viếng chùa.</p>";
-      return;
-    }
-    box.innerHTML = "<strong>Lịch sử gần đây:</strong><ul>" + 
-      data.history.slice(-5).reverse().map(h => `<li>${h.time} - ${h.loc}: ${h.que}</li>`).join('') + "</ul>";
-  }
-
-  // ===== Chuyển scene =====
-  function goTo(loc) {
-    currentLoc = loc;
-    incenseLit = false;
-    document.getElementById('mapScreen').style.display = 'none';
-    document.getElementById('sceneScreen').style.display = 'block';
-    document.getElementById('sceneTitle').textContent = locations[loc].name;
-    document.getElementById('statusText').textContent = locations[loc].desc + " – Hãy thành tâm thắp hương";
-    document.getElementById('lightBtn').disabled = false;
-    document.getElementById('prayBtn').disabled = true;
-    document.getElementById('drawBtn').disabled = true;
-    document.getElementById('resultBox').style.display = 'none';
-    document.querySelectorAll('.smoke').forEach(s => s.classList.remove('active'));
-  }
-
-  function backToMap() {
-    showMap();
-  }
-
-  // ===== Thắp hương =====
-  function lightIncense() {
-    document.querySelectorAll('.smoke').forEach(s => s.classList.add('active'));
-    document.getElementById('lightBtn').disabled = true;
-    document.getElementById('statusText').textContent = "Hương đã được thắp... Hãy cầu nguyện";
-    document.getElementById('prayBtn').disabled = false;
-    playBell();
-    incenseLit = true;
-  }
-
-  function pray() {
-    document.getElementById('prayBtn').disabled = true;
-    document.getElementById('statusText').textContent = "Đã cầu nguyện thành tâm. Bây giờ hãy bốc quẻ";
-    document.getElementById('drawBtn').disabled = false;
-    playBell();
-  }
-
-  // ===== Bốc quẻ =====
-  function drawQue() {
-    document.getElementById('drawBtn').disabled = true;
-    document.getElementById('statusText').textContent = "Đang gieo quẻ...";
-    document.getElementById('buddha').style.animation = "shake 0.4s infinite";
-    
-    setTimeout(() => {
-      document.getElementById('buddha').style.animation = "";
-      const q = queList[Math.floor(Math.random() * 72)];
-      document.getElementById('queSo').textContent = `Quẻ số ${q.so}`;
-      document.getElementById('queTen').textContent = q.ten;
-      document.getElementById('queNoiDung').textContent = q.noiDung;
-      document.getElementById('resultBox').style.display = 'block';
-      document.getElementById('statusText').textContent = "Nam Mô A Di Đà Phật";
-
-      // Lưu lịch sử
-      const data = JSON.parse(localStorage.getItem('chua_data_' + currentUser));
-      data.history.push({
-        time: new Date().toLocaleString('vi-VN'),
-        loc: locations[currentLoc].name,
-        que: `Quẻ ${q.so} - ${q.ten}`
-      });
-      localStorage.setItem('chua_data_' + currentUser, JSON.stringify(data));
-      playBell();
-    }, 1800);
-  }
-
-  // ===== Nhạc =====
-  function toggleMusic() {
-    const bg = document.getElementById('bgMusic');
-    if (musicOn) {
-      bg.pause();
-      document.getElementById('musicBtn').textContent = "🔇";
-    } else {
-      bg.play().catch(()=>{});
-      document.getElementById('musicBtn').textContent = "🔊";
-    }
-    musicOn = !musicOn;
-  }
-
-  function playBell() {
-    const bell = document.getElementById('bellSound');
-    bell.currentTime = 0;
-    bell.play().catch(()=>{});
-  }
-
-  // Tự đăng nhập nếu đã có
-  window.onload = () => {
-    const saved = localStorage.getItem('chua_user');
-    if (saved) {
-      currentUser = saved;
-      showMap();
-    }
-  };
-
-  // CSS shake
-  const style = document.createElement('style');
-  style.innerHTML = `@keyframes shake { 0%,100%{transform:rotate(0)} 25%{transform:rotate(-6deg)} 75%{transform:rotate(6deg)} }`;
-  document.head.appendChild(style);
+};
 </script>
 </body>
 </html>
