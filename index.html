@@ -22,8 +22,8 @@
             padding: 20px;
             overflow-x: hidden;
         }
-        h1 { color: var(--gold); margin-bottom: 5px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); font-size: 1.8rem; }
-        .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; font-style: italic; }
+        h1 { color: var(--gold); margin-bottom: 5px; text-shadow: 0 0 10px rgba(241, 196, 15, 0.5); font-size: 1.8rem; text-align: center; }
+        .subtitle { color: #aaa; font-size: 0.9rem; margin-bottom: 20px; font-style: italic; text-align: center; }
         
         .altar {
             position: relative;
@@ -95,6 +95,7 @@
             display: flex;
             justify-content: space-around;
             width: 100%;
+            max-width: 450px;
             margin: 20px 0;
             background: rgba(255,255,255,0.05);
             padding: 10px;
@@ -125,8 +126,9 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
         button:active { transform: scale(0.95); }
-        button.btn-que { background: linear-gradient(135deg, #2c3e50, #34495e); }
         button.btn-incense { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        button.btn-que { background: linear-gradient(135deg, #2c3e50, #34495e); }
+        button.btn-lich { background: linear-gradient(135deg, #8e44ad, #9b59b6); grid-column: span 2; }
         
         .floating-text {
             position: absolute;
@@ -142,10 +144,10 @@
             100% { transform: translateY(-80px); opacity: 0; }
         }
 
-        .que-result {
+        .result-box {
             margin-top: 15px;
-            padding: 12px;
-            background: rgba(241, 196, 15, 0.1);
+            padding: 15px;
+            background: rgba(241, 196, 15, 0.08);
             border: 1px dashed var(--gold);
             border-radius: 8px;
             text-align: center;
@@ -155,17 +157,17 @@
             animation: fadeIn 0.5s;
         }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .que-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
+        .box-title { color: var(--gold); font-weight: bold; margin-bottom: 8px; font-size: 1.1rem; }
+        .box-content { font-size: 0.95rem; line-height: 1.4; color: #eee; }
     </style>
 </head>
 <body>
 
     <h1>Chùa Hương Online</h1>
-    <div class="subtitle">Bấm nút bật nhạc Thiền, gõ mõ tích công đức và tĩnh tâm</div>
+    <div class="subtitle">Bật nhạc Thiền, gõ mõ tích đức, xin 72 quẻ linh ứng & xem lịch xuất hành</div>
 
     <div class="altar" id="altar-zone">
-        <!-- Đường dẫn ảnh tượng Phật công cộng sử dụng tạm thời -->
-        <img class="buddha-img" id="buddha" src="https://unsplash.com" alt="Tượng Phật">
+        <img class="buddha-img" id="buddha" src="https://postimg.cc" alt="Tượng Phật">
         
         <div class="incense-container">
             <div class="incense-stick" id="stick1"><div class="smoke"></div></div>
@@ -182,15 +184,21 @@
     <div class="controls">
         <button onclick="goMo()">Gõ Mõ Tích Đức</button>
         <button class="btn-incense" onclick="thapHuong()">Thắp Hương</button>
-        <button class="btn-que" style="grid-column: span 2;" onclick="xinXam()">Xin Quẻ Đầu Ngày</button>
+        <button class="btn-que" onclick="xinXam()">Xin 72 Quẻ Linh Xăm</button>
+        <button class="btn-lich" onclick="xemLichXuatHanh()">Xem Lịch Khởi Hành Bình An</button>
     </div>
 
-    <div class="que-result" id="que-box">
-        <div class="que-title" id="que-ten">Quẻ Số 01: Đại Cát</div>
-        <div id="que-noi-dung">Mọi sự hanh thông, vạn điều bình an, gia đạo êm ấm.</div>
+    <!-- Khung hiển thị kết quả -->
+    <div class="result-box" id="que-box">
+        <div class="box-title" id="que-ten">Quẻ Số 01: Đại Cát</div>
+        <div class="box-content" id="que-noi-dung">Mọi sự hanh thông, vạn điều bình an, gia đạo êm ấm.</div>
     </div>
 
-    <!-- mâm âm thanh sử dụng tạm thời từ kho nhạc mở -->
+    <div class="result-box" id="lich-box" style="background: rgba(142, 68, 173, 0.1); border-color: #8e44ad;">
+        <div class="box-title" id="lich-ten" style="color: #c0392b;">Lịch Khởi Hành Cầu An</div>
+        <div class="box-content" id="lich-noi-dung">Chọn giờ tốt để vạn sự hanh thông, xuất hành thuận lợi.</div>
+    </div>
+
     <audio id="audio-bg" loop src="https://soundhelix.com"></audio> 
     <audio id="audio-mo" src="https://mixkit.co"></audio>
 
@@ -211,7 +219,7 @@
         function goMo() {
             if (!musicStarted) {
                 let bgAudio = document.getElementById('audio-bg');
-                bgAudio.volume = 0.2;
+                bgAudio.volume = 0.1;
                 bgAudio.play().catch(function(e) {});
                 musicStarted = true;
             }
@@ -255,10 +263,3 @@
                 score += 10;
                 document.getElementById('cong-duc').innerText = score;
             } else {
-                alert("Nhang đang cháy, tâm thành ý nguyện đã được chứng giám!");
-            }
-        }
-
-        const danhSachQue = [
-            { ten: "Quẻ Số 09: Thượng Thượng Cát", noiDung: "Cầu tài đắc tài, cầu lộc đắc lộc. Ngày mới tràn đầy năng lượng tích cực và may mắn." },
-            { ten: "Quẻ Số 18: Đại Cát Vạn Sự Thành", noiDung: "Công việc có quý nhân phù trợ, khó khăn tự khắc qua đi, tâm tình an yên vui vẻ." },
